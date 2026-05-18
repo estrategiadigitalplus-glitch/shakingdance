@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shaking Dance — Editor de Lección</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    .tabs{display:flex;gap:2px;background:var(--dark3);border-radius:10px;padding:4px;margin-bottom:20px}
+    .tab{flex:1;padding:9px 6px;border-radius:7px;border:none;background:none;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px}
+    .tab:hover{color:var(--text)}
+    .tab.active{background:var(--dark2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+    .tab i{font-size:15px}
+    .tab-panel{display:none}.tab-panel.active{display:block}
+
+    .upload-zone{border:1.5px dashed rgba(29,158,117,.25);border-radius:14px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:14px}
+    .upload-zone:hover{border-color:var(--teal);background:rgba(29,158,117,.04)}
+    .upload-icon{font-size:34px;color:var(--teal);margin-bottom:8px}
+
+    .content-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--dark2);border:0.5px solid var(--border);border-radius:10px;margin-bottom:7px;transition:border-color .12s}
+    .content-item:hover{border-color:var(--teal)}
+    .ci-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+    .ci-teal{background:rgba(29,158,117,.1);color:var(--teal)}
+    .ci-red{background:rgba(226,75,74,.1);color:#E24B4A}
+    .ci-purple{background:rgba(127,119,221,.1);color:var(--purple)}
+    .ci-amber{background:rgba(239,159,39,.1);color:#EF9F27}
+    .ci-info{flex:1;min-width:0}
+    .ci-title{font-size:13px;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+    .ci-meta{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:6px}
+    .ci-badge{font-size:10px;padding:2px 8px;border-radius:8px;font-weight:500}
+    .cb-green{background:rgba(29,158,117,.12);color:var(--teal)}
+    .cb-amber{background:rgba(239,159,39,.12);color:#EF9F27}
+
+    .quiz-q{background:var(--dark3);border-radius:10px;padding:13px 15px;margin-bottom:10px;border:0.5px solid var(--border)}
+    .opt-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+    .opt-radio{width:16px;height:16px;accent-color:var(--teal);flex-shrink:0;cursor:pointer}
+    .opt-input{flex:1;padding:7px 10px;border:0.5px solid var(--border);border-radius:7px;font-size:12px;background:var(--dark2);color:var(--text);outline:none;font-family:inherit}
+    .opt-input:focus{border-color:var(--teal)}
+    .add-opt{font-size:11px;color:var(--teal);background:none;border:none;cursor:pointer;padding:0;font-family:inherit}
+    .add-opt:hover{text-decoration:underline}
+
+    .tarea-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--dark2);border:0.5px solid var(--border);border-radius:10px;margin-bottom:7px}
+    .tarea-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--purple));display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;flex-shrink:0}
+
+    .progress-bar-wrap{height:5px;background:var(--dark3);border-radius:3px;overflow:hidden;flex:1}
+    .progress-bar-fill{height:100%;border-radius:3px;background:var(--teal)}
+
+    .vid-preview{background:var(--dark3);border-radius:10px;padding:12px;display:flex;align-items:center;gap:12px;margin-bottom:12px;border:0.5px solid var(--border)}
+    .vid-preview-thumb{width:80px;height:50px;background:var(--dark);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+    .setting-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:0.5px solid var(--border)}
+    .setting-lbl{font-size:13px;font-weight:500;color:var(--text)}
+    .setting-sub{font-size:11px;color:var(--text2);margin-top:1px}
+
+    .notif-toast{position:fixed;bottom:24px;right:24px;background:var(--teal);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s ease}
+    .notif-toast.show{transform:translateY(0);opacity:1}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="navbar-brand" href="admin.html">
+    <div class="brand-logo"><img src="img/logo.png" alt="Shaking Dance"/></div>
+    <div>
+      <div class="brand-name">Shaking Dance</div>
+      <div class="brand-sub">Admin</div>
+    </div>
+  </a>
+  <div style="display:flex;align-items:center;gap:8px;color:var(--text2);font-size:13px">
+    <a href="admin.html" style="color:var(--text2);text-decoration:none">Panel Admin</a>
+    <i class="ti ti-chevron-right" style="font-size:14px"></i>
+    <a href="admin.html" style="color:var(--text2);text-decoration:none">Cursos</a>
+    <i class="ti ti-chevron-right" style="font-size:14px"></i>
+    <span style="color:var(--text)" id="breadcrumb-lesson">Lección</span>
+  </div>
+  <div class="navbar-right">
+    <button class="btn btn-teal" onclick="publicar()"><i class="ti ti-device-floppy"></i>Publicar lección</button>
+    <div class="user-chip"><div class="user-av">AD</div><span class="user-name">Admin</span></div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- HEADER -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <div style="font-size:20px;font-weight:600;color:var(--text)" id="lesson-title">Vuelta doble — Salsa Básico</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:3px">Lección 5 · Edita el contenido de esta lección</div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <span class="badge badge-teal" id="lesson-status">Borrador</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-tab="video"><i class="ti ti-video"></i>Video</button>
+    <button class="tab" data-tab="pdf"><i class="ti ti-file-text"></i>PDF / Material</button>
+    <button class="tab" data-tab="tarea"><i class="ti ti-clipboard"></i>Tarea</button>
+    <button class="tab" data-tab="quiz"><i class="ti ti-help-circle"></i>Quiz</button>
+    <button class="tab" data-tab="entregas"><i class="ti ti-inbox"></i>Entregas <span id="entregas-count" style="background:rgba(29,158,117,.2);color:var(--teal);font-size:10px;padding:1px 6px;border-radius:8px;margin-left:2px">5</span></button>
+  </div>
+
+  <!-- ===== VIDEO ===== -->
+  <div class="tab-panel active" id="tab-video">
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+        <i class="ti ti-video" style="color:var(--teal)"></i>Video de la lección
+      </div>
+
+      <!-- YT Preview (hidden by default) -->
+      <div class="vid-preview" id="yt-preview" style="display:none">
+        <div class="vid-preview-thumb"><i class="ti ti-brand-youtube" style="color:#E24B4A;font-size:26px"></i></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;color:var(--text)">Video de YouTube vinculado</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px" id="yt-url-display"></div>
+        </div>
+        <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="quitarYT()"><i class="ti ti-x"></i>Quitar</button>
+      </div>
+
+      <!-- File preview -->
+      <div class="vid-preview" id="file-preview" style="display:none">
+        <div class="vid-preview-thumb"><i class="ti ti-video" style="color:var(--teal);font-size:24px"></i></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;color:var(--text)" id="file-name">video.mp4</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px" id="file-size"></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" id="upload-progress" style="width:0%"></div></div>
+            <span style="font-size:11px;color:var(--teal)" id="upload-pct">0%</span>
+          </div>
+        </div>
+        <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="quitarFile()"><i class="ti ti-x"></i>Quitar</button>
+      </div>
+
+      <!-- Upload zone -->
+      <div class="upload-zone" id="upload-zone">
+        <div class="upload-icon"><i class="ti ti-cloud-upload"></i></div>
+        <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px">Arrastra tu video aquí</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:14px">MP4, MOV, AVI · máx 2GB</div>
+        <label for="file-input" class="btn btn-teal btn-sm" style="cursor:pointer">
+          <i class="ti ti-upload"></i>Seleccionar archivo
+        </label>
+        <div style="margin:12px 0;font-size:11px;color:var(--text2)">— o pega un link de YouTube —</div>
+        <div style="display:flex;gap:8px;max-width:420px;margin:0 auto" onclick="event.stopPropagation()">
+          <input class="form-input" id="yt-input" placeholder="https://youtube.com/watch?v=..." style="flex:1"/>
+          <button class="btn btn-teal btn-sm" onclick="usarYT()"><i class="ti ti-link"></i>Usar link</button>
+        </div>
+        <input type="file" id="file-input" accept="video/mp4,video/mov,video/avi,video/*" style="display:none" onchange="seleccionarArchivo(this)"/>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+        <i class="ti ti-info-circle" style="color:var(--purple)"></i>Detalles de la lección
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Título de la lección</label>
+          <input class="form-input" id="lesson-name-input" value="Vuelta doble"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Duración aproximada</label>
+          <input class="form-input" value="14 min"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción — ¿Qué aprenderá el alumno?</label>
+        <textarea class="form-input" style="min-height:80px;resize:vertical">En esta lección aprenderás la vuelta doble en salsa, uno de los giros más elegantes. Practicaremos el timing y la postura correcta para ejecutarlo con fluidez.</textarea>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-lbl">Requiere completar lección anterior</div><div class="setting-sub">El alumno debe ver L.4 antes de acceder a esta</div></div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-lbl">Lección de vista previa (gratis)</div><div class="setting-sub">Cualquiera puede ver esta lección sin membresía</div></div>
+        <div class="toggle off" onclick="this.classList.toggle('off')"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PDF ===== -->
+  <div class="tab-panel" id="tab-pdf">
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+        <i class="ti ti-file-text" style="color:#E24B4A"></i>Subir PDF / Material de apoyo
+      </div>
+      <div class="upload-zone" style="border-color:rgba(226,75,74,.25)">
+        <div class="upload-icon" style="color:#E24B4A"><i class="ti ti-file-upload"></i></div>
+        <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px">Sube un PDF o documento</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:14px">PDF, DOC, PPT, XLSX · máx 50MB</div>
+        <label for="pdf-input" class="btn btn-sm" style="border-color:rgba(226,75,74,.3);color:#E24B4A;cursor:pointer">
+          <i class="ti ti-upload"></i>Seleccionar archivo
+        </label>
+        <input type="file" id="pdf-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" style="display:none" onchange="subirPDF(this)"/>
+      </div>
+      <div id="pdf-list">
+        <div class="content-item">
+          <div class="ci-icon ci-red"><i class="ti ti-file-text"></i></div>
+          <div class="ci-info">
+            <div class="ci-title">Guía de pasos — Vuelta doble.pdf</div>
+            <div class="ci-meta"><i class="ti ti-file"></i>2.4 MB <i class="ti ti-download"></i>48 descargas</div>
+          </div>
+          <span class="ci-badge cb-green">Publicado</span>
+          <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="this.closest('.content-item').remove();toast('PDF eliminado')"><i class="ti ti-trash"></i></button>
+        </div>
+        <div class="content-item">
+          <div class="ci-icon ci-red"><i class="ti ti-presentation"></i></div>
+          <div class="ci-info">
+            <div class="ci-title">Diagrama de pasos ilustrado.pdf</div>
+            <div class="ci-meta"><i class="ti ti-file"></i>5.1 MB <i class="ti ti-download"></i>31 descargas</div>
+          </div>
+          <span class="ci-badge cb-green">Publicado</span>
+          <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="this.closest('.content-item').remove();toast('PDF eliminado')"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+        <i class="ti ti-link" style="color:var(--purple)"></i>Links adicionales
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input class="form-input" id="link-titulo" placeholder="Nombre del recurso" style="flex:1"/>
+        <input class="form-input" id="link-url" placeholder="https://..." style="flex:2"/>
+        <button class="btn btn-teal btn-sm" onclick="agregarLink()"><i class="ti ti-plus"></i>Agregar</button>
+      </div>
+      <div id="links-list">
+        <div class="content-item">
+          <div class="ci-icon ci-purple"><i class="ti ti-brand-spotify"></i></div>
+          <div class="ci-info">
+            <div class="ci-title">Playlist de práctica — Salsa</div>
+            <div class="ci-meta"><i class="ti ti-link"></i>open.spotify.com</div>
+          </div>
+          <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="this.closest('.content-item').remove()"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAREA ===== -->
+  <div class="tab-panel" id="tab-tarea">
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+        <i class="ti ti-clipboard" style="color:var(--purple)"></i>Configurar tarea
+      </div>
+      <div class="form-group">
+        <label class="form-label">Título de la tarea</label>
+        <input class="form-input" value="Practica la vuelta doble y graba un video"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Instrucciones para el alumno</label>
+        <textarea class="form-input" style="min-height:90px;resize:vertical">Graba un video de 30-60 segundos practicando la vuelta doble. Asegúrate de que se vea tu postura completa y el timing con la música. Sube el video en formato MP4 o MOV.</textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Tipo de entrega</label>
+          <select class="form-select">
+            <option>Video (MP4, MOV)</option>
+            <option>Imagen (foto)</option>
+            <option>Texto escrito</option>
+            <option>Cualquier archivo</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Fecha límite (opcional)</label>
+          <input class="form-input" type="date"/>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-lbl">Tarea obligatoria para avanzar</div><div class="setting-sub">El alumno debe entregar antes de ver la siguiente lección</div></div>
+        <div class="toggle off" onclick="this.classList.toggle('off')"></div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-lbl">Notificarme al recibir entregas</div><div class="setting-sub">Recibir email cuando un alumno entregue</div></div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+      <button class="btn btn-teal" style="margin-top:14px" onclick="toast('✓ Tarea guardada correctamente')"><i class="ti ti-device-floppy"></i>Guardar tarea</button>
+    </div>
+  </div>
+
+  <!-- ===== QUIZ ===== -->
+  <div class="tab-panel" id="tab-quiz">
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+        <i class="ti ti-help-circle" style="color:#EF9F27"></i>Configurar quiz
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Puntuación mínima para aprobar</label>
+          <select class="form-select">
+            <option>60%</option><option selected>70%</option><option>80%</option><option>100%</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Intentos permitidos</label>
+          <select class="form-select">
+            <option>1 intento</option><option selected>Ilimitados</option><option>3 intentos</option>
+          </select>
+        </div>
+      </div>
+      <div id="quiz-questions"></div>
+      <button class="btn btn-p btn-block" onclick="agregarPregunta()" style="margin-bottom:14px">
+        <i class="ti ti-plus"></i>Agregar pregunta
+      </button>
+      <button class="btn btn-teal btn-block" onclick="toast('✓ Quiz guardado correctamente')">
+        <i class="ti ti-device-floppy"></i>Guardar quiz
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== ENTREGAS ===== -->
+  <div class="tab-panel" id="tab-entregas">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:15px;font-weight:600;color:var(--text)">Entregas recibidas</div>
+      <span style="font-size:13px;color:var(--text2)">5 de 24 alumnos entregaron</span>
+    </div>
+    <div id="entregas-list"></div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="notif-toast" id="toast"><i class="ti ti-check"></i><span id="toast-msg">Guardado</span></div>
+
+<script src="js/data.js"></script>
+<script src="js/supabase.js"></script>
+<script>
+// READ URL PARAMS
+(function() {
+  const p = new URLSearchParams(window.location.search);
+  const title = p.get('title');
+  const dur = p.get('dur');
+  const course = p.get('course');
+  const lesson = p.get('lesson');
+
+  if (title) {
+    document.getElementById('lesson-title').textContent = title + ' — ' + (SD.courses[parseInt(course)]?.name || 'Curso');
+    document.getElementById('lesson-name-input').value = title;
+    document.getElementById('breadcrumb-lesson').textContent = title;
+  }
+  if (dur) {
+    document.querySelector('input[value="14 min"]') && (document.querySelector('input[value="14 min"]').value = dur + ' min');
+  }
+  if (lesson !== null) {
+    document.querySelector('input[value="Vuelta doble"]') && (document.querySelector('input[value="Vuelta doble"]').value = title || '');
+  }
+})();
+
+// TABS
+document.querySelectorAll('.tab[data-tab]').forEach(t => {
+  t.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+  });
+});
+
+// TOAST
+function toast(msg, color) {
+  const el = document.getElementById('toast');
+  const msgEl = document.getElementById('toast-msg');
+  el.style.background = color || 'var(--teal)';
+  msgEl.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// PUBLICAR
+async function publicar() {
+  const titulo = document.getElementById('lesson-name-input').value || 'Lección';
+
+  // Update badge
+  const badge = document.getElementById('lesson-status');
+  badge.textContent = 'Publicado';
+  badge.style.background = 'rgba(29,158,117,.15)';
+  badge.style.color = 'var(--teal)';
+  badge.style.border = '0.5px solid rgba(29,158,117,.3)';
+
+  // Update publish button
+  const btn = document.querySelector('button[onclick="publicar()"]');
+  if (btn) {
+    btn.innerHTML = '<i class="ti ti-check"></i>¡Publicada!';
+    btn.disabled = true;
+    btn.style.opacity = '.7';
+    btn.style.cursor = 'default';
+  }
+
+  // Show success banner
+  let banner = document.getElementById('publish-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'publish-banner';
+    banner.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--teal);color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:0 4px 20px rgba(29,158,117,.4);z-index:999;display:flex;align-items:center;gap:10px;animation:fadeInUp .3s ease';
+    document.body.appendChild(banner);
+  }
+  banner.innerHTML = `<i class="ti ti-circle-check" style="font-size:20px"></i> Lección "<strong>${titulo}</strong>" publicada correctamente — regresando al admin...`;
+  banner.style.display = 'flex';
+
+  // Save to Supabase
+  const params = new URLSearchParams(window.location.search);
+  const ci = parseInt(params.get('course') || 0);
+  const curso = SD.courses[ci];
+
+  try {
+    // Get curso id from Supabase
+    const cursos = await DB.getCursos();
+    const cursoDb = cursos.find(c => c.estilo === curso?.cat) || cursos[0];
+
+    if (cursoDb) {
+      const leccionData = {
+        curso_id: cursoDb.id,
+        titulo: titulo,
+        duracion: document.querySelector('input[placeholder="14 min"]')?.value || '—',
+        descripcion: document.querySelector('textarea')?.value || '',
+        youtube_url: document.getElementById('yt-input')?.value || '',
+        numero: (await DB.getLecciones(cursoDb.id)).length + 1,
+        publicado: true
+      };
+      await DB.createLeccion(leccionData);
+    }
+  } catch(e) {
+    console.log('Supabase save error:', e);
+  }
+
+  // Go back to admin after 2.5 seconds
+  setTimeout(() => {
+    window.location.href = 'admin.html';
+  }, 2500);
+}
+
+// VIDEO — Seleccionar archivo
+function seleccionarArchivo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('upload-zone').style.display = 'none';
+  const preview = document.getElementById('file-preview');
+  preview.style.display = 'flex';
+  document.getElementById('file-name').textContent = file.name;
+  document.getElementById('file-size').textContent = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+  // Simulate upload progress
+  let pct = 0;
+  const interval = setInterval(() => {
+    pct += Math.random() * 15;
+    if (pct >= 100) { pct = 100; clearInterval(interval); toast('✓ Video cargado correctamente'); }
+    document.getElementById('upload-progress').style.width = pct + '%';
+    document.getElementById('upload-pct').textContent = Math.round(pct) + '%';
+  }, 300);
+}
+
+function quitarFile() {
+  document.getElementById('upload-zone').style.display = 'block';
+  document.getElementById('file-preview').style.display = 'none';
+  document.getElementById('file-input').value = '';
+  document.getElementById('upload-progress').style.width = '0%';
+}
+
+// VIDEO — YouTube
+function usarYT() {
+  const url = document.getElementById('yt-input').value.trim();
+  if (!url || !url.includes('http')) { toast('Pega un link válido de YouTube', '#E24B4A'); return; }
+  document.getElementById('upload-zone').style.display = 'none';
+  const preview = document.getElementById('yt-preview');
+  preview.style.display = 'flex';
+  document.getElementById('yt-url-display').textContent = url.length > 55 ? url.slice(0, 55) + '...' : url;
+  toast('✓ Link de YouTube vinculado');
+}
+
+function quitarYT() {
+  document.getElementById('upload-zone').style.display = 'block';
+  document.getElementById('yt-preview').style.display = 'none';
+  document.getElementById('yt-input').value = '';
+}
+
+// PDF — Subir
+function subirPDF(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const item = document.createElement('div');
+  item.className = 'content-item';
+  item.innerHTML = `
+    <div class="ci-icon ci-red"><i class="ti ti-file-text"></i></div>
+    <div class="ci-info">
+      <div class="ci-title">${file.name}</div>
+      <div class="ci-meta"><i class="ti ti-file"></i>${(file.size/1024/1024).toFixed(1)} MB</div>
+    </div>
+    <span class="ci-badge cb-green">Subido</span>
+    <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="this.closest('.content-item').remove();toast('PDF eliminado')"><i class="ti ti-trash"></i></button>
+  `;
+  document.getElementById('pdf-list').appendChild(item);
+  toast('✓ ' + file.name + ' subido correctamente');
+  input.value = '';
+}
+
+// LINKS
+function agregarLink() {
+  const titulo = document.getElementById('link-titulo').value.trim();
+  const url = document.getElementById('link-url').value.trim();
+  if (!titulo || !url) { toast('Completa el título y el link', '#E24B4A'); return; }
+  const item = document.createElement('div');
+  item.className = 'content-item';
+  const domain = url.replace('https://','').replace('http://','').split('/')[0];
+  item.innerHTML = `
+    <div class="ci-icon ci-purple"><i class="ti ti-link"></i></div>
+    <div class="ci-info">
+      <div class="ci-title">${titulo}</div>
+      <div class="ci-meta"><i class="ti ti-link"></i>${domain}</div>
+    </div>
+    <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="this.closest('.content-item').remove()"><i class="ti ti-trash"></i></button>
+  `;
+  document.getElementById('links-list').appendChild(item);
+  document.getElementById('link-titulo').value = '';
+  document.getElementById('link-url').value = '';
+  toast('✓ Link agregado');
+}
+
+// QUIZ
+let qCount = 0;
+function agregarPregunta() {
+  qCount++;
+  const div = document.createElement('div');
+  div.className = 'quiz-q';
+  div.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <span style="font-size:11px;font-weight:500;color:var(--text2)">Pregunta ${qCount}</span>
+      <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.2);padding:3px 8px" onclick="this.closest('.quiz-q').remove()"><i class="ti ti-trash"></i></button>
+    </div>
+    <input class="form-input" placeholder="Escribe la pregunta aquí..." style="margin-bottom:10px"/>
+    <div class="opt-row"><input type="radio" name="q${qCount}" class="opt-radio" checked/><input class="opt-input" placeholder="Opción correcta"/></div>
+    <div class="opt-row"><input type="radio" name="q${qCount}" class="opt-radio"/><input class="opt-input" placeholder="Opción incorrecta B"/></div>
+    <div class="opt-row"><input type="radio" name="q${qCount}" class="opt-radio"/><input class="opt-input" placeholder="Opción incorrecta C"/></div>
+    <button class="add-opt" onclick="agregarOpcion(this, 'q${qCount}')"><i class="ti ti-plus"></i> agregar opción</button>
+  `;
+  document.getElementById('quiz-questions').appendChild(div);
+}
+
+function agregarOpcion(btn, qname) {
+  const row = document.createElement('div');
+  row.className = 'opt-row';
+  row.innerHTML = `<input type="radio" name="${qname}" class="opt-radio"/><input class="opt-input" placeholder="Otra opción"/>`;
+  btn.parentNode.insertBefore(row, btn);
+}
+
+// Agregar 2 preguntas de ejemplo al inicio
+agregarPregunta();
+document.querySelector('#quiz-questions .opt-input').value = '¿Cuántos tiempos dura la vuelta doble?';
+agregarPregunta();
+
+// ENTREGAS
+const entregas = [
+  { name: 'María González', ini: 'MG', status: 'entregado', date: 'Hoy 10:22', nota: null },
+  { name: 'Luis Pérez', ini: 'LP', status: 'entregado', date: 'Ayer 18:45', nota: '9/10' },
+  { name: 'Ana Torres', ini: 'AT', status: 'entregado', date: 'Ayer 14:30', nota: '8/10' },
+  { name: 'Carlos Ruiz', ini: 'CR', status: 'pendiente', date: '—', nota: null },
+  { name: 'Sofía Méndez', ini: 'SM', status: 'pendiente', date: '—', nota: null },
+  { name: 'Pedro Vega', ini: 'PV', status: 'entregado', date: 'Hace 2 días', nota: '7/10' },
+  { name: 'Daniela Cruz', ini: 'DC', status: 'pendiente', date: '—', nota: null },
+];
+
+document.getElementById('entregas-list').innerHTML = entregas.map((a, i) => `
+  <div class="tarea-item">
+    <div class="tarea-av">${a.ini}</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:500;color:var(--text)">${a.name}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:1px"><i class="ti ti-clock" style="font-size:12px"></i> ${a.date}</div>
+    </div>
+    <span style="font-size:11px;padding:3px 9px;border-radius:8px;font-weight:500;${a.status === 'entregado' ? 'background:rgba(29,158,117,.1);color:var(--teal)' : 'background:var(--dark3);color:var(--text2)'}">
+      ${a.status === 'entregado' ? 'Entregado' : 'Pendiente'}
+    </span>
+    ${a.status === 'entregado' ? `
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm"><i class="ti ti-eye"></i>Ver</button>
+        ${a.nota ? `<span class="btn btn-sm" style="background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.25);color:var(--teal)">${a.nota}</span>`
+          : `<button class="btn btn-sm btn-teal" onclick="calificar(${i}, this)"><i class="ti ti-star"></i>Calificar</button>`}
+      </div>` :
+      `<button class="btn btn-sm" style="color:var(--text2)" onclick="toast('Recordatorio enviado a ${a.name}')"><i class="ti ti-mail"></i>Recordar</button>`}
+  </div>`).join('');
+
+function calificar(idx, btn) {
+  const nota = prompt('Calificación para ' + entregas[idx].name + ' (ej. 9/10):');
+  if (!nota) return;
+  entregas[idx].nota = nota;
+  btn.outerHTML = `<span class="btn btn-sm" style="background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.25);color:var(--teal)">${nota}</span>`;
+  toast('✓ Calificación guardada');
+}
+</script>
+</body>
+</html>

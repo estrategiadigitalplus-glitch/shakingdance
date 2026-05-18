@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shaking Dance — Admin</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+<div class="admin-wrap">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand-logo"><img src="img/logo.png" alt="Shaking Dance"/></div>
+      <div>
+        <div class="brand-name">Shaking Dance</div>
+        <div class="brand-sub">Admin</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-sec">Principal</div>
+      <button class="sidebar-link active" data-panel="dashboard"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
+      <button class="sidebar-link" data-panel="alumnos"><i class="ti ti-users"></i>Alumnos<span class="nbadge">3</span></button>
+      <button class="sidebar-link" data-panel="videos"><i class="ti ti-video"></i>Subir videos</button>
+      <button class="sidebar-link" data-panel="cursos"><i class="ti ti-layout-grid"></i>Cursos</button>
+      <div class="sidebar-sec">Análisis</div>
+      <button class="sidebar-link" data-panel="metricas"><i class="ti ti-chart-bar"></i>Métricas</button>
+      <div class="sidebar-sec">Sistema</div>
+      <button class="sidebar-link" data-panel="config"><i class="ti ti-settings"></i>Configuración</button>
+      <button class="sidebar-link" onclick="window.location.href='index.html'"><i class="ti ti-logout"></i>Salir</button>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h3 id="panel-title" style="color:var(--text)">Dashboard</h3>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="btn btn-teal" id="top-btn" onclick="topBtnAction()"><i class="ti ti-plus"></i>Nuevo video</button>
+        <div class="user-chip"><div class="user-av">AD</div><span class="user-name">Admin</span></div>
+      </div>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- DASHBOARD -->
+      <div class="panel active" id="panel-dashboard">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+          <div class="stat-card"><div class="stat-icon si-teal"><i class="ti ti-users"></i></div><div><div class="stat-val">148</div><div class="stat-lbl">Alumnos activos</div></div></div>
+          <div class="stat-card"><div class="stat-icon si-purple"><i class="ti ti-video"></i></div><div><div class="stat-val">62</div><div class="stat-lbl">Videos publicados</div></div></div>
+          <div class="stat-card"><div class="stat-icon si-amber"><i class="ti ti-eye"></i></div><div><div class="stat-val">324</div><div class="stat-lbl">Reproducciones hoy</div></div></div>
+          <div class="stat-card"><div class="stat-icon si-teal"><i class="ti ti-currency-dollar"></i></div><div><div class="stat-val">$31,400</div><div class="stat-lbl">Ingresos mes</div></div></div>
+        </div>
+        <div class="two-col" style="margin-bottom:20px">
+          <div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)">Progreso promedio por estilo</div>
+            <div class="card" id="dash-prog"></div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)">Alumnos nuevos esta semana</div>
+            <div class="card">
+              <div style="display:flex;align-items:flex-end;gap:5px;height:80px" id="new-bars"></div>
+              <div style="display:flex;gap:5px;margin-top:5px" id="new-lbls"></div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)">Actividad reciente</div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Alumno</th><th>Acción</th><th>Curso</th><th>Hace</th></tr></thead>
+            <tbody id="activity-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ALUMNOS -->
+      <div class="panel" id="panel-alumnos">
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-teal" onclick="abrirModalAlumno()"><i class="ti ti-plus"></i>Nuevo alumno</button>
+          <button class="btn"><i class="ti ti-upload"></i>Importar CSV</button>
+          <button class="btn"><i class="ti ti-mail"></i>Enviar mensaje</button>
+          <span style="margin-left:auto;font-size:13px;color:var(--text2)">148 alumnos totales</span>
+        </div>
+        <div class="filter-row" id="alu-filters">
+          <div class="fpill active" data-af="todos">Todos</div>
+          <div class="fpill" data-af="activo">Activos</div>
+          <div class="fpill" data-af="trial">Trial</div>
+          <div class="fpill" data-af="expirado">Expirados</div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Alumno</th><th>Plan</th><th>Estado</th><th>Cursos</th><th>Progreso</th><th>Vence</th></tr></thead>
+            <tbody id="alu-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VIDEOS -->
+      <div class="panel" id="panel-videos">
+        <div class="upload-zone">
+          <div class="upload-icon"><i class="ti ti-cloud-upload"></i></div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;color:var(--text)">Arrastra tu video aquí</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:14px">MP4, MOV · máx 2GB · o haz click para seleccionar</div>
+          <button class="btn btn-teal"><i class="ti ti-upload"></i>Seleccionar archivo</button>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div style="font-size:14px;font-weight:600;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);color:var(--text)">Detalles del video</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Título de la lección</label>
+              <input class="form-input" placeholder="Ej. Paso básico salsa"/>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Estilo de baile</label>
+              <select class="form-select">
+                <option>Salsa</option><option>Bachata</option><option>Hip Hop</option><option>Reggaeton</option><option>Cumbia</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Nivel</label>
+              <select class="form-select"><option>Básico</option><option>Intermedio</option><option>Avanzado</option></select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Número de lección</label>
+              <input class="form-input" type="number" placeholder="Ej. 5"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Descripción</label>
+            <input class="form-input" placeholder="Breve descripción del contenido..."/>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-teal"><i class="ti ti-upload"></i>Publicar video</button>
+            <button class="btn"><i class="ti ti-device-floppy"></i>Guardar borrador</button>
+          </div>
+        </div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)">Videos publicados</div>
+        <div class="filter-row" id="vid-filters">
+          <div class="fpill active" data-vf="todos">Todos</div>
+          <div class="fpill" data-vf="salsa">Salsa</div>
+          <div class="fpill" data-vf="bachata">Bachata</div>
+          <div class="fpill" data-vf="hiphop">Hip Hop</div>
+          <div class="fpill" data-vf="reggaeton">Reggaeton</div>
+        </div>
+        <div id="vid-list"></div>
+      </div>
+
+      <!-- CURSOS -->
+      <div class="panel" id="panel-cursos">
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="btn btn-teal" onclick="abrirModalCurso()"><i class="ti ti-plus"></i>Nuevo curso</button>
+        </div>
+        <div id="cursos-list"></div>
+      </div>
+
+      <!-- MÉTRICAS -->
+      <div class="panel" id="panel-metricas">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+          <div class="stat-card"><div class="stat-icon si-teal"><i class="ti ti-check"></i></div><div><div class="stat-val">34%</div><div class="stat-lbl">Tasa finalización</div></div></div>
+          <div class="stat-card"><div class="stat-icon si-purple"><i class="ti ti-chart-bar"></i></div><div><div class="stat-val">16</div><div class="stat-lbl">Lecciones/alumno mes</div></div></div>
+          <div class="stat-card"><div class="stat-icon si-amber"><i class="ti ti-trending-up"></i></div><div><div class="stat-val">82%</div><div class="stat-lbl">Retención mensual</div></div></div>
+        </div>
+        <div class="two-col">
+          <div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)">Lecciones más vistas</div>
+            <div class="card" id="top-lessons"></div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)">Alumnos por estilo</div>
+            <div class="card" id="style-dist"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFIG -->
+      <div class="panel" id="panel-config">
+        <div class="card" style="margin-bottom:14px">
+          <div style="font-size:14px;font-weight:600;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);color:var(--text)">Acceso y membresías</div>
+          <div class="prof-row"><div><div style="font-size:13px;font-weight:500;color:var(--text)">Acceso automático al pagar</div><div style="font-size:12px;color:var(--text2)">Acceso inmediato tras confirmar pago</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+          <div class="prof-row"><div><div style="font-size:13px;font-weight:500;color:var(--text)">Periodo de gracia (3 días)</div><div style="font-size:12px;color:var(--text2)">Acceso extra al vencer membresía</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+          <div class="prof-row"><div><div style="font-size:13px;font-weight:500;color:var(--text)">Certificado automático</div><div style="font-size:12px;color:var(--text2)">Generar al completar 100% de un curso</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <div style="font-size:14px;font-weight:600;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);color:var(--text)">Videos y cursos</div>
+          <div class="prof-row"><div><div style="font-size:13px;font-weight:500;color:var(--text)">Lecciones bloqueadas por orden</div><div style="font-size:12px;color:var(--text2)">Desbloquear al completar la anterior</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+          <div class="prof-row"><div><div style="font-size:13px;font-weight:500;color:var(--text)">Notificación nuevo video</div><div style="font-size:12px;color:var(--text2)">Email a alumnos al publicar lección</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+          <div class="prof-row"><div><div style="font-size:13px;font-weight:500;color:var(--text)">Comentarios en lecciones</div><div style="font-size:12px;color:var(--text2)">Permitir preguntas por lección</div></div><div class="toggle off" onclick="this.classList.toggle('off')"></div></div>
+        </div>
+        <div class="card">
+          <div style="font-size:14px;font-weight:600;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);color:var(--text)">Integraciones</div>
+          <div class="prof-row"><span class="prof-lbl"><i class="ti ti-credit-card"></i>MercadoPago</span><span class="badge badge-teal">Conectado</span></div>
+          <div class="prof-row"><span class="prof-lbl"><i class="ti ti-mail"></i>Mailchimp</span><button class="btn btn-sm">Conectar</button></div>
+          <div class="prof-row"><span class="prof-lbl"><i class="ti ti-brand-whatsapp"></i>WhatsApp Business</span><button class="btn btn-sm">Conectar</button></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/admin.js"></script>
+
+<!-- MODAL NUEVO ALUMNO -->
+<div id="modal-alumno" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+  <div style="background:#161B22;border:1px solid rgba(29,158,117,.3);border-radius:20px;width:100%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:fadeInUp .2s ease">
+    <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:16px;font-weight:600;color:#fff">Nuevo alumno</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">Completa los datos del alumno</div>
+      </div>
+      <button onclick="cerrarModalAlumno()" style="width:32px;height:32px;border-radius:8px;border:0.5px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&#x2715;</button>
+    </div>
+    <div style="padding:20px 24px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);display:block;margin-bottom:5px">Nombre</label>
+          <input id="alu-nombre" class="form-input" placeholder="Nombre completo"/>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);display:block;margin-bottom:5px">Apellido</label>
+          <input id="alu-apellido" class="form-input" placeholder="Apellido"/>
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);display:block;margin-bottom:5px">Correo electrónico</label>
+        <input id="alu-email" class="form-input" type="email" placeholder="correo@ejemplo.com"/>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);display:block;margin-bottom:5px">Teléfono (opcional)</label>
+        <input id="alu-tel" class="form-input" type="tel" placeholder="+52 55 0000 0000"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);display:block;margin-bottom:5px">Plan</label>
+          <select id="alu-plan" class="form-select">
+            <option>Plan Básico — 99/mes</option>
+            <option selected>Plan Completo — 99/mes</option>
+            <option>Trimestral — ,799</option>
+            <option>Anual VIP — ,999</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);display:block;margin-bottom:5px">Estado</label>
+          <select id="alu-status" class="form-select">
+            <option value="activo">Activo</option>
+            <option value="trial">Trial</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);display:block;margin-bottom:5px">Cursos asignados</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="curso-checks">
+          <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:0.5px solid rgba(255,255,255,.1);border-radius:8px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.6)"><input type="checkbox" value="salsa"> Salsa</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:0.5px solid rgba(255,255,255,.1);border-radius:8px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.6)"><input type="checkbox" value="bachata"> Bachata</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:0.5px solid rgba(255,255,255,.1);border-radius:8px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.6)"><input type="checkbox" value="hiphop"> Hip Hop</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:0.5px solid rgba(255,255,255,.1);border-radius:8px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.6)"><input type="checkbox" value="reggaeton"> Reggaeton</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:0.5px solid rgba(255,255,255,.1);border-radius:8px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.6)"><input type="checkbox" value="cumbia"> Cumbia</label>
+        </div>
+      </div>
+      <div id="modal-error" style="display:none;background:rgba(226,75,74,.12);border:0.5px solid rgba(226,75,74,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#E24B4A;margin-bottom:12px"></div>
+      <div id="modal-success" style="display:none;background:rgba(29,158,117,.12);border:0.5px solid rgba(29,158,117,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#1D9E75;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="guardarAlumno()" class="btn btn-teal" style="flex:1;justify-content:center"><i class="ti ti-user-plus"></i>Guardar alumno</button>
+        <button onclick="cerrarModalAlumno()" class="btn" style="flex:1;justify-content:center">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR ALUMNO -->
+<div id="modal-editar" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+  <div style="background:#161B22;border:1px solid rgba(29,158,117,.3);border-radius:20px;width:100%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,.6)">
+    <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:16px;font-weight:600;color:#fff">Editar alumno</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">Modifica los datos del alumno</div>
+      </div>
+      <button onclick="cerrarModalEditar()" style="width:32px;height:32px;border-radius:8px;border:0.5px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&#x2715;</button>
+    </div>
+    <div style="padding:20px 24px">
+      <input type="hidden" id="edit-idx"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);display:block;margin-bottom:5px">Nombre completo</label>
+          <input id="edit-nombre" class="form-input" placeholder="Nombre completo"/>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);display:block;margin-bottom:5px">Correo</label>
+          <input id="edit-email" class="form-input" type="email" placeholder="correo@ejemplo.com"/>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);display:block;margin-bottom:5px">Plan</label>
+          <select id="edit-plan" class="form-select">
+            <option>Plan Básico</option>
+            <option>Plan Completo</option>
+            <option>Trimestral</option>
+            <option>Anual VIP</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);display:block;margin-bottom:5px">Estado</label>
+          <select id="edit-status" class="form-select">
+            <option value="activo">Activo</option>
+            <option value="trial">Trial</option>
+            <option value="expirado">Expirado</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);display:block;margin-bottom:5px">Fecha de vencimiento</label>
+        <input id="edit-exp" class="form-input" placeholder="Ej. 30 jun"/>
+      </div>
+      <div id="edit-error" style="display:none;background:rgba(226,75,74,.12);border:0.5px solid rgba(226,75,74,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#E24B4A;margin-bottom:12px"></div>
+      <div id="edit-success" style="display:none;background:rgba(29,158,117,.12);border:0.5px solid rgba(29,158,117,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#1D9E75;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="guardarEdicion()" class="btn btn-teal" style="flex:1;justify-content:center"><i class="ti ti-device-floppy"></i>Guardar cambios</button>
+        <button onclick="eliminarAlumno()" class="btn" style="flex:1;justify-content:center;color:#E24B4A;border-color:rgba(226,75,74,.3)"><i class="ti ti-trash"></i>Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVA LECCIÓN -->
+<div id="modal-leccion" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+  <div style="background:#161B22;border:1px solid rgba(29,158,117,.3);border-radius:20px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.6)">
+    <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:16px;font-weight:600;color:#fff" id="modal-leccion-titulo">Nueva lección</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">Completa los datos de la lección</div>
+      </div>
+      <button onclick="cerrarModalLeccion()" style="width:32px;height:32px;border-radius:8px;border:0.5px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&#x2715;</button>
+    </div>
+    <div style="padding:20px 24px">
+      <div class="form-group">
+        <label class="form-label">Título de la lección *</label>
+        <input id="leccion-titulo" class="form-input" placeholder="Ej. Paso básico, Vuelta doble..."/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Duración (minutos) *</label>
+          <input id="leccion-dur" class="form-input" type="number" placeholder="Ej. 15" min="1"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Nivel</label>
+          <select class="form-select" id="leccion-nivel">
+            <option>Básico</option><option>Intermedio</option><option>Avanzado</option>
+          </select>
+        </div>
+      </div>
+      <input id="leccion-yt" style="display:none"/>
+      <textarea id="leccion-desc" style="display:none"></textarea>
+
+      <!-- What happens next -->
+      <div style="background:var(--dark3);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:10px;text-transform:uppercase;letter-spacing:.7px">Al crear la lección podrás agregar:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.5)">
+            <div style="width:28px;height:28px;border-radius:7px;background:rgba(29,158,117,.12);display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:15px"><i class="ti ti-video"></i></div>
+            Video o YouTube
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.5)">
+            <div style="width:28px;height:28px;border-radius:7px;background:rgba(226,75,74,.1);display:flex;align-items:center;justify-content:center;color:#E24B4A;font-size:15px"><i class="ti ti-file-text"></i></div>
+            PDFs y material
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.5)">
+            <div style="width:28px;height:28px;border-radius:7px;background:rgba(239,159,39,.1);display:flex;align-items:center;justify-content:center;color:#EF9F27;font-size:15px"><i class="ti ti-help-circle"></i></div>
+            Quiz de evaluación
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.5)">
+            <div style="width:28px;height:28px;border-radius:7px;background:rgba(127,119,221,.1);display:flex;align-items:center;justify-content:center;color:var(--purple);font-size:15px"><i class="ti ti-clipboard"></i></div>
+            Tarea / entrega
+          </div>
+        </div>
+      </div>
+      <div id="leccion-error" style="display:none;background:rgba(226,75,74,.12);border:0.5px solid rgba(226,75,74,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#E24B4A;margin-bottom:12px"></div>
+      <div id="leccion-success" style="display:none;background:rgba(29,158,117,.12);border:0.5px solid rgba(29,158,117,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#1D9E75;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="guardarLeccion()" class="btn btn-teal" style="flex:1;justify-content:center"><i class="ti ti-plus"></i>Crear lección</button>
+        <button onclick="cerrarModalLeccion()" class="btn" style="flex:1;justify-content:center">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO / EDITAR CURSO -->
+<div id="modal-curso" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+  <div style="background:#161B22;border:1px solid rgba(29,158,117,.3);border-radius:20px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.6)">
+    <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:16px;font-weight:600;color:#fff" id="modal-curso-ttl">Nuevo curso</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">Completa los datos del curso</div>
+      </div>
+      <button onclick="cerrarModalCurso()" style="width:32px;height:32px;border-radius:8px;border:0.5px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&#x2715;</button>
+    </div>
+    <div style="padding:20px 24px">
+      <div class="form-group">
+        <label class="form-label">Nombre del curso *</label>
+        <input id="curso-nombre" class="form-input" placeholder="Ej. Salsa, Bachata, Hip Hop..."/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Estilo de baile</label>
+          <select id="curso-estilo" class="form-select">
+            <option value="salsa">Salsa</option>
+            <option value="bachata">Bachata</option>
+            <option value="hiphop">Hip Hop</option>
+            <option value="reggaeton">Reggaeton</option>
+            <option value="cumbia">Cumbia</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Nivel</label>
+          <select id="curso-nivel" class="form-select">
+            <option>Básico</option>
+            <option>Intermedio</option>
+            <option>Avanzado</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Color del curso</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div onclick="selColor('#1D9E75',this)" style="width:32px;height:32px;border-radius:8px;background:#1D9E75;cursor:pointer;border:2px solid #1D9E75;box-shadow:0 0 0 2px rgba(29,158,117,.4)"></div>
+          <div onclick="selColor('#7F77DD',this)" style="width:32px;height:32px;border-radius:8px;background:#7F77DD;cursor:pointer;border:2px solid transparent"></div>
+          <div onclick="selColor('#E24B4A',this)" style="width:32px;height:32px;border-radius:8px;background:#E24B4A;cursor:pointer;border:2px solid transparent"></div>
+          <div onclick="selColor('#EF9F27',this)" style="width:32px;height:32px;border-radius:8px;background:#EF9F27;cursor:pointer;border:2px solid transparent"></div>
+          <div onclick="selColor('#378ADD',this)" style="width:32px;height:32px;border-radius:8px;background:#378ADD;cursor:pointer;border:2px solid transparent"></div>
+          <div onclick="selColor('#D4537E',this)" style="width:32px;height:32px;border-radius:8px;background:#D4537E;cursor:pointer;border:2px solid transparent"></div>
+          <input type="color" id="curso-color" value="#1D9E75" style="width:32px;height:32px;border-radius:8px;border:0.5px solid rgba(255,255,255,.15);cursor:pointer;padding:2px;background:var(--dark3)" oninput="syncColor(this.value)"/>
+        </div>
+      </div>
+      <div id="curso-error" style="display:none;background:rgba(226,75,74,.12);border:0.5px solid rgba(226,75,74,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#E24B4A;margin-bottom:12px"></div>
+      <div id="curso-success" style="display:none;background:rgba(29,158,117,.12);border:0.5px solid rgba(29,158,117,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#1D9E75;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="guardarCurso()" class="btn btn-teal" style="flex:1;justify-content:center"><i class="ti ti-device-floppy"></i>Guardar curso</button>
+        <button onclick="cerrarModalCurso()" class="btn" style="flex:1;justify-content:center">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function selColor(color, el) {
+  document.getElementById('curso-color').value = color;
+  document.querySelectorAll('#modal-curso [onclick^="selColor"]').forEach(e => e.style.border = '2px solid transparent');
+  el.style.border = '2px solid ' + color;
+  el.style.boxShadow = '0 0 0 2px ' + color + '55';
+}
+function syncColor(val) {
+  document.querySelectorAll('#modal-curso [onclick^="selColor"]').forEach(e => e.style.border = '2px solid transparent');
+}
+</script>
+</body>
+</html>

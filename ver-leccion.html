@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shaking Dance — Ver Lección</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    .video-container{position:relative;width:100%;background:#000;border-radius:var(--radius-lg);overflow:hidden;margin-bottom:20px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
+    .video-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:rgba(255,255,255,.4);width:100%;height:100%;background:linear-gradient(135deg,#0d1a14,#0d1220)}
+    .video-placeholder i{font-size:56px;color:var(--teal);opacity:.7}
+    .play-big{width:72px;height:72px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 0 24px rgba(29,158,117,.4)}
+    .play-big:hover{transform:scale(1.08);box-shadow:0 0 32px rgba(29,158,117,.5)}
+    .play-big i{font-size:28px;color:#fff;margin-left:3px}
+    .video-controls{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));padding:20px 16px 14px;display:flex;align-items:center;gap:12px;opacity:0;transition:opacity .2s}
+    .video-container:hover .video-controls{opacity:1}
+    .progress-track{flex:1;height:4px;background:rgba(255,255,255,.2);border-radius:2px;cursor:pointer;position:relative}
+    .progress-thumb{height:100%;border-radius:2px;background:var(--teal);width:35%}
+    .ctrl-btn{color:rgba(255,255,255,.8);font-size:20px;cursor:pointer;background:none;border:none;transition:color .12s}
+    .ctrl-btn:hover{color:#fff}
+    .ctrl-time{font-size:12px;color:rgba(255,255,255,.6)}
+
+    .lesson-tabs{display:flex;gap:2px;background:var(--dark3);border-radius:10px;padding:4px;margin-bottom:18px}
+    .ltab{flex:1;padding:8px 6px;border-radius:7px;border:none;background:none;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px}
+    .ltab:hover{color:var(--text)}
+    .ltab.active{background:var(--dark2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+    .ltab i{font-size:15px}
+    .ltab-panel{display:none}.ltab-panel.active{display:block}
+
+    .lesson-nav{background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--radius-md);overflow:hidden}
+    .lesson-nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background .12s}
+    .lesson-nav-item:last-child{border-bottom:none}
+    .lesson-nav-item:hover{background:var(--dark3)}
+    .lesson-nav-item.active-lesson{background:rgba(29,158,117,.08);border-left:2px solid var(--teal)}
+    .ln-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+    .ln-done{background:rgba(29,158,117,.12);color:var(--teal)}
+    .ln-current{background:var(--teal);color:#fff}
+    .ln-locked{background:var(--dark3);color:var(--text3)}
+    .ln-pending{background:var(--purple-light);color:var(--purple)}
+
+    .material-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;cursor:pointer;transition:border-color .12s}
+    .material-item:hover{border-color:var(--teal)}
+    .mat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+
+    .quiz-option{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--dark2);border:1.5px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;cursor:pointer;transition:all .15s;font-size:13px;color:var(--text)}
+    .quiz-option:hover{border-color:var(--teal);background:rgba(29,158,117,.04)}
+    .quiz-option.selected{border-color:var(--teal);background:rgba(29,158,117,.08)}
+    .quiz-option.correct{border-color:var(--teal);background:rgba(29,158,117,.12);color:var(--teal)}
+    .quiz-option.wrong{border-color:#E24B4A;background:rgba(226,75,74,.08);color:#E24B4A}
+    .qo-radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
+    .quiz-option.selected .qo-radio{border-color:var(--teal);background:var(--teal)}
+    .quiz-option.selected .qo-radio::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff}
+
+    .tarea-dropzone{border:1.5px dashed rgba(29,158,117,.25);border-radius:var(--radius-lg);padding:24px;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:14px}
+    .tarea-dropzone:hover{border-color:var(--teal);background:rgba(29,158,117,.04)}
+
+    .notif-toast{position:fixed;bottom:24px;right:24px;background:var(--teal);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s ease}
+    .notif-toast.show{transform:translateY(0);opacity:1}
+
+    .prog-ring{width:48px;height:48px;flex-shrink:0}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="navbar-brand" href="portal.html">
+    <div class="brand-logo"><img src="img/logo.png" alt="Shaking Dance"/></div>
+    <div>
+      <div class="brand-name">Shaking Dance</div>
+      <div class="brand-sub">Academia</div>
+    </div>
+  </a>
+  <div style="display:flex;align-items:center;gap:8px;color:var(--text2);font-size:13px">
+    <a href="portal.html" style="color:var(--text2)">Mis cursos</a>
+    <i class="ti ti-chevron-right" style="font-size:14px"></i>
+    <a href="portal.html" style="color:var(--text2)">Salsa Básico</a>
+    <i class="ti ti-chevron-right" style="font-size:14px"></i>
+    <span style="color:var(--text)">Vuelta doble</span>
+  </div>
+  <div class="navbar-right">
+    <div class="notif-btn"><i class="ti ti-bell"></i><div class="notif-dot"></div></div>
+    <div class="user-chip"><div class="user-av">MG</div><span class="user-name">María G.</span></div>
+  </div>
+</nav>
+
+<div style="max-width:1100px;margin:0 auto;padding:24px;display:grid;grid-template-columns:1fr 300px;gap:20px">
+
+  <!-- MAIN CONTENT -->
+  <div>
+    <!-- VIDEO PLAYER -->
+    <div class="video-container" id="video-container">
+      <div class="video-placeholder" id="video-placeholder">
+        <i class="ti ti-music"></i>
+        <div style="text-align:center">
+          <div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:6px">Vuelta doble — Salsa Básico</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:16px">Lección 5 · 14 min</div>
+          <div class="play-big" onclick="reproducir()"><i class="ti ti-player-play"></i></div>
+          <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:12px">Haz click para reproducir</div>
+        </div>
+      </div>
+      <div class="video-controls">
+        <button class="ctrl-btn" onclick="reproducir()"><i class="ti ti-player-play" id="play-icon"></i></button>
+        <span class="ctrl-time">4:58</span>
+        <div class="progress-track"><div class="progress-thumb" id="prog-thumb"></div></div>
+        <span class="ctrl-time">14:00</span>
+        <button class="ctrl-btn"><i class="ti ti-volume"></i></button>
+        <button class="ctrl-btn"><i class="ti ti-maximize"></i></button>
+      </div>
+    </div>
+
+    <!-- LESSON INFO -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <h1 style="font-size:20px;font-weight:600;color:var(--text)">Vuelta doble</h1>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm"><i class="ti ti-thumb-up"></i>Me gustó</button>
+          <button class="btn btn-sm btn-teal" id="mark-done-btn" onclick="marcarCompleto()"><i class="ti ti-check"></i>Marcar como visto</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;font-size:13px;color:var(--text2)">
+        <span><i class="ti ti-clock" style="font-size:14px"></i> 14 min</span>
+        <span><i class="ti ti-layout-grid" style="font-size:14px"></i> Salsa Básico</span>
+        <span><i class="ti ti-user" style="font-size:14px"></i> Instructor: Ana García</span>
+        <span class="badge badge-teal" id="lesson-status-badge" style="display:none">Completado ✓</span>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="lesson-tabs">
+      <button class="ltab active" data-ltab="descripcion"><i class="ti ti-info-circle"></i>Descripción</button>
+      <button class="ltab" data-ltab="materiales"><i class="ti ti-file-text"></i>Materiales</button>
+      <button class="ltab" data-ltab="quiz"><i class="ti ti-help-circle"></i>Quiz</button>
+      <button class="ltab" data-ltab="tarea"><i class="ti ti-clipboard"></i>Tarea</button>
+    </div>
+
+    <!-- DESCRIPCIÓN -->
+    <div class="ltab-panel active" id="ltab-descripcion">
+      <div class="card">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--text)">¿Qué aprenderás en esta lección?</h3>
+        <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px">
+          En esta lección aprenderás la vuelta doble en salsa, uno de los giros más elegantes y vistosos. Practicaremos el timing y la postura correcta para ejecutarlo con fluidez, coordinando el movimiento de los hombros con los pies.
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          ${[
+            ['Timing correcto para el giro','ti-clock'],
+            ['Postura y balance','ti-body'],
+            ['Coordinación hombros-pies','ti-arrows-move'],
+            ['Combinarlo con pasos básicos','ti-puzzle'],
+          ].map(([t,i])=>`
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)">
+              <i class="ti ${i}" style="color:var(--teal);font-size:16px"></i>${t}
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- MATERIALES -->
+    <div class="ltab-panel" id="ltab-materiales">
+      <div class="material-item" onclick="toast('Descargando PDF...')">
+        <div class="mat-icon" style="background:rgba(226,75,74,.1);color:#E24B4A"><i class="ti ti-file-text"></i></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;color:var(--text)">Guía de pasos — Vuelta doble.pdf</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">PDF · 2.4 MB</div>
+        </div>
+        <button class="btn btn-sm btn-teal"><i class="ti ti-download"></i>Descargar</button>
+      </div>
+      <div class="material-item" onclick="toast('Descargando PDF...')">
+        <div class="mat-icon" style="background:rgba(226,75,74,.1);color:#E24B4A"><i class="ti ti-presentation"></i></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;color:var(--text)">Diagrama de pasos ilustrado.pdf</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">PDF · 5.1 MB</div>
+        </div>
+        <button class="btn btn-sm btn-teal"><i class="ti ti-download"></i>Descargar</button>
+      </div>
+      <div class="material-item" onclick="window.open('https://spotify.com','_blank')">
+        <div class="mat-icon" style="background:rgba(127,119,221,.1);color:var(--purple)"><i class="ti ti-brand-spotify"></i></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;color:var(--text)">Playlist de práctica — Salsa</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">Link externo · Spotify</div>
+        </div>
+        <button class="btn btn-sm"><i class="ti ti-external-link"></i>Abrir</button>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div class="ltab-panel" id="ltab-quiz">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div>
+            <h3 style="font-size:14px;font-weight:600;color:var(--text)">Quiz de la lección</h3>
+            <div style="font-size:12px;color:var(--text2);margin-top:2px">2 preguntas · Mínimo 70% para aprobar</div>
+          </div>
+          <span id="quiz-score" style="display:none;font-size:14px;font-weight:600;color:var(--teal)"></span>
+        </div>
+        <div id="quiz-content"></div>
+        <button class="btn btn-teal btn-block" id="quiz-btn" onclick="enviarQuiz()" style="margin-top:14px">
+          <i class="ti ti-send"></i>Enviar respuestas
+        </button>
+      </div>
+    </div>
+
+    <!-- TAREA -->
+    <div class="ltab-panel" id="ltab-tarea">
+      <div class="card">
+        <h3 style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">Practica y graba un video</h3>
+        <p style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
+          Graba un video de 30-60 segundos practicando la vuelta doble. Asegúrate de que se vea tu postura completa y el timing con la música.
+        </p>
+        <div class="tarea-dropzone">
+          <i class="ti ti-cloud-upload" style="font-size:32px;color:var(--teal);display:block;margin-bottom:8px"></i>
+          <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px">Sube tu video aquí</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:12px">MP4, MOV · máx 500MB</div>
+          <label for="tarea-file" class="btn btn-teal btn-sm" style="cursor:pointer"><i class="ti ti-upload"></i>Seleccionar archivo</label>
+          <input type="file" id="tarea-file" accept="video/*,image/*" style="display:none" onchange="subirTarea(this)"/>
+        </div>
+        <div id="tarea-preview" style="display:none;background:var(--dark3);border-radius:10px;padding:14px;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:40px;height:40px;border-radius:8px;background:rgba(29,158,117,.12);display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:20px"><i class="ti ti-video"></i></div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500;color:var(--text)" id="tarea-fname"></div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+                <div style="flex:1;height:4px;background:var(--dark2);border-radius:2px;overflow:hidden"><div id="tarea-progress" style="height:100%;background:var(--teal);border-radius:2px;width:0%;transition:width .3s"></div></div>
+                <span style="font-size:11px;color:var(--teal)" id="tarea-pct">0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tarea-success" style="display:none;background:rgba(29,158,117,.1);border:0.5px solid rgba(29,158,117,.3);border-radius:10px;padding:14px;text-align:center;color:var(--teal)">
+          <i class="ti ti-circle-check" style="font-size:28px;display:block;margin-bottom:6px"></i>
+          <div style="font-size:14px;font-weight:600">¡Tarea entregada!</div>
+          <div style="font-size:12px;opacity:.7;margin-top:3px">Tu instructor revisará tu video pronto</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR — Lista de lecciones -->
+  <div>
+    <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+      <span>Salsa Básico</span>
+      <span style="font-size:12px;color:var(--teal)">8/10</span>
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;font-size:11px;color:var(--text2)">
+        <span>Tu progreso</span><span>80%</span>
+      </div>
+      <div style="height:5px;background:var(--dark3);border-radius:3px;overflow:hidden"><div style="height:100%;width:80%;background:var(--teal);border-radius:3px"></div></div>
+    </div>
+    <div class="lesson-nav">
+      ${[
+        {n:1,t:'Introducción a la Salsa',d:'6 min',done:true},
+        {n:2,t:'Paso básico',d:'8 min',done:true},
+        {n:3,t:'Tiempo y ritmo',d:'10 min',done:true},
+        {n:4,t:'Giro básico',d:'12 min',done:true},
+        {n:5,t:'Vuelta doble',d:'14 min',current:true},
+        {n:6,t:'Movimiento de caderas',d:'11 min',pending:true},
+        {n:7,t:'Combinación 1',d:'15 min',locked:true},
+        {n:8,t:'Combinación 2',d:'16 min',locked:true},
+        {n:9,t:'Salsa en pareja',d:'18 min',locked:true},
+        {n:10,t:'Coreografía final',d:'22 min',locked:true},
+      ].map(l=>`
+        <div class="lesson-nav-item${l.current?' active-lesson':''}" onclick="${l.locked?`toast('Completa la lección anterior primero','#7F77DD')`:`window.location.href='ver-leccion.html'`}">
+          <div class="ln-num ${l.done?'ln-done':l.current?'ln-current':l.locked?'ln-locked':'ln-pending'}">
+            ${l.done?'<i class="ti ti-check" style="font-size:11px"></i>':l.locked?'<i class="ti ti-lock" style="font-size:10px"></i>':l.n}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:500;color:${l.locked?'var(--text3)':l.current?'var(--text)':'var(--text2)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.t}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:1px">${l.d}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-sm" style="flex:1;justify-content:center" onclick="window.location.href='ver-leccion.html'"><i class="ti ti-arrow-left"></i>Anterior</button>
+      <button class="btn btn-sm btn-teal" style="flex:1;justify-content:center" onclick="window.location.href='ver-leccion.html'">Siguiente<i class="ti ti-arrow-right"></i></button>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="notif-toast" id="toast"><i class="ti ti-check"></i><span id="toast-msg"></span></div>
+
+<script>
+function toast(msg, color) {
+  const el = document.getElementById('toast');
+  el.style.background = color || 'var(--teal)';
+  document.getElementById('toast-msg').textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// TABS
+document.querySelectorAll('.ltab[data-ltab]').forEach(t => {
+  t.addEventListener('click', function() {
+    document.querySelectorAll('.ltab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.ltab-panel').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('ltab-' + this.dataset.ltab).classList.add('active');
+  });
+});
+
+// VIDEO PLAYER
+let playing = false;
+function reproducir() {
+  playing = !playing;
+  const icon = document.getElementById('play-icon');
+  const placeholder = document.getElementById('video-placeholder');
+  if (playing) {
+    icon.className = 'ti ti-player-pause';
+    placeholder.style.opacity = '0.3';
+    // Simulate progress
+    let w = 35;
+    window._playInterval = setInterval(() => {
+      w = Math.min(w + 0.3, 100);
+      document.getElementById('prog-thumb').style.width = w + '%';
+      if (w >= 100) { clearInterval(window._playInterval); marcarCompleto(); }
+    }, 200);
+  } else {
+    icon.className = 'ti ti-player-play';
+    placeholder.style.opacity = '1';
+    clearInterval(window._playInterval);
+  }
+}
+
+function marcarCompleto() {
+  const btn = document.getElementById('mark-done-btn');
+  btn.innerHTML = '<i class="ti ti-check"></i>¡Completada!';
+  btn.style.background = 'rgba(29,158,117,.2)';
+  btn.style.borderColor = 'rgba(29,158,117,.3)';
+  btn.style.color = 'var(--teal)';
+  btn.disabled = true;
+  document.getElementById('lesson-status-badge').style.display = 'inline-flex';
+  toast('✓ Lección marcada como completada');
+}
+
+// QUIZ
+const quizData = [
+  { q: '¿Cuántos tiempos dura la vuelta doble en salsa?', opts: ['2 tiempos', '4 tiempos', '6 tiempos', '8 tiempos'], correct: 1 },
+  { q: '¿Qué parte del cuerpo lidera la vuelta doble?', opts: ['Los pies', 'Los hombros', 'Las caderas', 'Los brazos'], correct: 1 },
+];
+let selected = {};
+
+document.getElementById('quiz-content').innerHTML = quizData.map((q, qi) => `
+  <div style="margin-bottom:18px">
+    <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:10px">${qi+1}. ${q.q}</div>
+    ${q.opts.map((o, oi) => `
+      <div class="quiz-option" id="opt-${qi}-${oi}" onclick="selectOpt(${qi},${oi})">
+        <div class="qo-radio" id="radio-${qi}-${oi}"></div>
+        <span>${o}</span>
+      </div>`).join('')}
+  </div>`).join('');
+
+function selectOpt(qi, oi) {
+  // Deselect previous
+  if (selected[qi] !== undefined) {
+    document.getElementById(`opt-${qi}-${selected[qi]}`).classList.remove('selected');
+    document.getElementById(`radio-${qi}-${selected[qi]}`).innerHTML = '';
+  }
+  selected[qi] = oi;
+  const el = document.getElementById(`opt-${qi}-${oi}`);
+  el.classList.add('selected');
+  document.getElementById(`radio-${qi}-${oi}`).innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:#fff"></div>';
+}
+
+function enviarQuiz() {
+  if (Object.keys(selected).length < quizData.length) {
+    toast('Responde todas las preguntas primero', '#7F77DD'); return;
+  }
+  let correct = 0;
+  quizData.forEach((q, qi) => {
+    const isCorrect = selected[qi] === q.correct;
+    if (isCorrect) correct++;
+    q.opts.forEach((_, oi) => {
+      const el = document.getElementById(`opt-${qi}-${oi}`);
+      el.onclick = null;
+      if (oi === q.correct) el.classList.add('correct');
+      else if (oi === selected[qi] && !isCorrect) el.classList.add('wrong');
+      el.classList.remove('selected');
+    });
+  });
+  const pct = Math.round(correct / quizData.length * 100);
+  document.getElementById('quiz-score').textContent = `${correct}/${quizData.length} · ${pct}%`;
+  document.getElementById('quiz-score').style.display = 'block';
+  document.getElementById('quiz-score').style.color = pct >= 70 ? 'var(--teal)' : '#E24B4A';
+  const btn = document.getElementById('quiz-btn');
+  btn.innerHTML = pct >= 70 ? '<i class="ti ti-award"></i>¡Aprobado! ' + pct + '%' : '<i class="ti ti-refresh"></i>Intentar de nuevo';
+  btn.style.background = pct >= 70 ? 'var(--teal)' : '#E24B4A';
+  if (pct >= 70) { btn.onclick = null; toast('🎉 ¡Quiz aprobado! ' + pct + '%'); }
+  else { btn.onclick = () => location.reload(); }
+}
+
+// TAREA
+function subirTarea(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.querySelector('.tarea-dropzone').style.display = 'none';
+  document.getElementById('tarea-preview').style.display = 'block';
+  document.getElementById('tarea-fname').textContent = file.name;
+  let pct = 0;
+  const iv = setInterval(() => {
+    pct += Math.random() * 18;
+    if (pct >= 100) {
+      pct = 100;
+      clearInterval(iv);
+      setTimeout(() => {
+        document.getElementById('tarea-preview').style.display = 'none';
+        document.getElementById('tarea-success').style.display = 'block';
+        toast('✓ ¡Tarea entregada con éxito!');
+      }, 500);
+    }
+    document.getElementById('tarea-progress').style.width = Math.min(pct, 100) + '%';
+    document.getElementById('tarea-pct').textContent = Math.round(Math.min(pct, 100)) + '%';
+  }, 250);
+}
+</script>
+</body>
+</html>

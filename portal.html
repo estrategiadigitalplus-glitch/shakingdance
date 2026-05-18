@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shaking Dance — Mi Portal</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="navbar-brand" href="portal.html">
+    <div class="brand-logo"><img src="img/logo.png" alt="Shaking Dance"/></div>
+    <div>
+      <div class="brand-name">Shaking Dance</div>
+      <div class="brand-sub">Academia</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <button class="nav-link active" data-page="inicio"><i class="ti ti-home"></i>Inicio</button>
+    <button class="nav-link" data-page="cursos"><i class="ti ti-layout-grid"></i>Cursos</button>
+    <button class="nav-link" data-page="biblioteca"><i class="ti ti-archive"></i>Biblioteca</button>
+    <button class="nav-link" data-page="progreso"><i class="ti ti-chart-bar"></i>Mi progreso</button>
+    <button class="nav-link" data-page="cuenta"><i class="ti ti-user"></i>Mi cuenta</button>
+  </div>
+  <div class="navbar-right">
+    <div class="notif-btn"><i class="ti ti-bell"></i><div class="notif-dot"></div></div>
+    <div class="user-chip">
+      <div class="user-av">MG</div>
+      <span class="user-name">María G.</span>
+    </div>
+  </div>
+</nav>
+
+<!-- INICIO -->
+<div class="page active" id="page-inicio">
+  <div class="page-wrap">
+    <div class="hero-banner">
+      <div>
+        <h1>Hola, María 👋</h1>
+        <p>Continúa donde lo dejaste — ¡ya casi terminas Salsa Básica!</p>
+        <div class="memb-tag"><i class="ti ti-star" style="font-size:12px"></i>Plan Completo · Todos los estilos</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:40px;font-weight:700;color:var(--teal);line-height:1">12</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">días seguidos 🔥</div>
+        <button class="btn btn-teal" style="margin-top:10px"><i class="ti ti-player-play"></i>Continuar</button>
+      </div>
+    </div>
+
+    <div class="three-col" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-icon si-teal"><i class="ti ti-video"></i></div><div><div class="stat-val">24</div><div class="stat-lbl">Lecciones vistas</div></div></div>
+      <div class="stat-card"><div class="stat-icon si-purple"><i class="ti ti-clock"></i></div><div><div class="stat-val">8h 40m</div><div class="stat-lbl">Tiempo bailando</div></div></div>
+      <div class="stat-card"><div class="stat-icon si-amber"><i class="ti ti-award"></i></div><div><div class="stat-val">1</div><div class="stat-lbl">Certificado obtenido</div></div></div>
+    </div>
+
+    <div class="sec-hdr">
+      <span class="sec-ttl">Mis cursos en progreso</span>
+      <button class="sec-link" onclick="goPage('cursos')">Ver todos →</button>
+    </div>
+    <div class="course-grid" id="home-courses" style="margin-bottom:20px"></div>
+
+    <div class="sec-hdr">
+      <span class="sec-ttl">Continuar viendo</span>
+    </div>
+    <div class="cw-list" id="cw-list"></div>
+  </div>
+</div>
+
+<!-- CURSOS -->
+<div class="page" id="page-cursos">
+  <div class="page-wrap">
+    <h2 style="margin-bottom:20px;color:var(--text)">Catálogo de cursos</h2>
+    <div class="filter-row" id="curso-filters">
+      <div class="fpill active" data-cat="todos">Todos</div>
+      <div class="fpill" data-cat="salsa">Salsa</div>
+      <div class="fpill" data-cat="bachata">Bachata</div>
+      <div class="fpill" data-cat="hiphop">Hip Hop</div>
+      <div class="fpill" data-cat="reggaeton">Reggaeton</div>
+      <div class="fpill" data-cat="cumbia">Cumbia</div>
+    </div>
+    <div id="curso-content"></div>
+  </div>
+</div>
+
+<!-- BIBLIOTECA -->
+<div class="page" id="page-biblioteca">
+  <div class="page-wrap">
+    <h2 style="margin-bottom:20px;color:var(--text)">Biblioteca de lecciones</h2>
+    <div class="filter-row" id="bib-filters">
+      <div class="fpill active" data-cat="todos">Todos</div>
+      <div class="fpill" data-cat="salsa">Salsa</div>
+      <div class="fpill" data-cat="bachata">Bachata</div>
+      <div class="fpill" data-cat="hiphop">Hip Hop</div>
+      <div class="fpill" data-cat="reggaeton">Reggaeton</div>
+    </div>
+    <div class="lesson-list" id="bib-list"></div>
+  </div>
+</div>
+
+<!-- PROGRESO -->
+<div class="page" id="page-progreso">
+  <div class="page-wrap">
+    <h2 style="margin-bottom:20px;color:var(--text)">Mi progreso</h2>
+    <div class="three-col" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-icon si-teal"><i class="ti ti-video"></i></div><div><div class="stat-val">24</div><div class="stat-lbl">Lecciones vistas</div></div></div>
+      <div class="stat-card"><div class="stat-icon si-purple"><i class="ti ti-check"></i></div><div><div class="stat-val">3</div><div class="stat-lbl">Cursos iniciados</div></div></div>
+      <div class="stat-card"><div class="stat-icon si-amber"><i class="ti ti-award"></i></div><div><div class="stat-val">1</div><div class="stat-lbl">Certificados</div></div></div>
+    </div>
+    <div class="sec-hdr"><span class="sec-ttl">Progreso por curso</span></div>
+    <div id="prog-list" style="margin-bottom:20px"></div>
+    <div class="sec-hdr"><span class="sec-ttl">Mis certificados</span></div>
+    <div class="cert-card">
+      <div class="cert-icon"><i class="ti ti-award"></i></div>
+      <div style="flex:1">
+        <div class="cert-name">Hip Hop Básico — Completado</div>
+        <div class="cert-sub">Obtenido el 10 de mayo 2025 · Shaking Dance</div>
+      </div>
+      <button class="btn btn-outline btn-sm"><i class="ti ti-download"></i>Descargar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUENTA -->
+<div class="page" id="page-cuenta">
+  <div class="page-wrap">
+    <h2 style="margin-bottom:20px;color:var(--text)">Mi cuenta</h2>
+    <div class="card-dark" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:14px">
+        <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid var(--teal);flex-shrink:0;box-shadow:0 0 14px rgba(29,158,117,.25)">
+          <img src="img/logo.png" style="width:100%;height:100%;object-fit:cover"/>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:600;color:#fff">María González</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px">Miembro desde marzo 2025</div>
+        </div>
+        <button class="btn btn-sm" style="margin-left:auto"><i class="ti ti-edit"></i>Editar</button>
+      </div>
+      <div class="prof-row"><span class="prof-lbl"><i class="ti ti-mail"></i>Correo</span><span>maria.g@gmail.com</span></div>
+      <div class="prof-row"><span class="prof-lbl"><i class="ti ti-phone"></i>Teléfono</span><span>+52 55 9876 5432</span></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)">Mi membresía</div>
+      <div class="prof-row"><span class="prof-lbl"><i class="ti ti-star"></i>Plan</span><strong style="color:var(--teal)">Plan Completo</strong></div>
+      <div class="prof-row"><span class="prof-lbl"><i class="ti ti-calendar"></i>Vigencia</span><span>30 jun 2025 <span style="color:var(--teal);font-size:12px">(47 días)</span></span></div>
+      <div class="prof-row"><span class="prof-lbl"><i class="ti ti-credit-card"></i>Pago</span><span>Visa •••• 5522</span></div>
+      <div class="prof-row"><span class="prof-lbl"><i class="ti ti-refresh"></i>Renovación</span><span>Automática <span class="badge badge-teal">Activa</span></span></div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-teal" style="flex:1;justify-content:center"><i class="ti ti-refresh"></i>Renovar</button>
+        <button class="btn" style="flex:1;justify-content:center">Cambiar plan</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)">Notificaciones</div>
+      <div class="prof-row"><span class="prof-lbl"><i class="ti ti-bell"></i>Recordatorio de clase</span><span class="badge badge-teal">Activo</span></div>
+      <div class="prof-row"><span class="prof-lbl"><i class="ti ti-mail"></i>Novedades por email</span><span class="badge badge-teal">Activo</span></div>
+      <div class="prof-row"><span class="prof-lbl"><i class="ti ti-brand-whatsapp"></i>Avisos WhatsApp</span><span class="badge badge-gray">Inactivo</span></div>
+    </div>
+    <button class="btn btn-block" onclick="window.location.href='index.html'"><i class="ti ti-logout"></i>Cerrar sesión</button>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/portal.js"></script>
+</body>
+</html>

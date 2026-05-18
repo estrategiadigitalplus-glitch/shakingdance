@@ -178,15 +178,21 @@ let cursosDB = [];
 async function cargarCursos() {
   try {
     const data = await DB.getCursos();
-    if (data && data.length > 0) { cursosDB = data; }
-  } catch(e) { console.log("Cursos locales", e); }
-  renderCursos();
+    if (data && Array.isArray(data) && data.length > 0) {
+      cursosDB = data;
+    }
+  } catch(e) {
+    console.log('Supabase no disponible, usando datos locales');
+    cursosDB = [];
+  }
+  await renderCursos();
 }
 
 // Lecciones por curso cargadas de Supabase
 let leccionesPorCurso = {};
 
 async function renderCursos() {
+  try {
   // Load courses from Supabase or fallback to SD.courses
   const cursos = cursosDB.length > 0 ? cursosDB.map((c, ci) => ({
     id: c.id,
@@ -267,6 +273,10 @@ async function renderCursos() {
       </div>
     </div>`;
   }).join('');
+  } catch(e) {
+    console.error('renderCursos error:', e);
+    document.getElementById('cursos-list').innerHTML = '<div style="padding:20px;color:var(--text2);text-align:center">Error cargando cursos. <button class="btn btn-sm btn-teal" onclick="renderCursos()">Reintentar</button></div>';
+  }
 }
 
 async function eliminarLeccionDB(leccionId, cursoId, ci) {
@@ -724,5 +734,8 @@ goPanel = function(id) {
   if (id === 'alumnos') cargarAlumnos();
 };
 
-// Initial load
-cargarCursos();
+// Initial load — wrapped in try/catch so errors don't break navigation
+(async function init() {
+  try { await cargarCursos(); } catch(e) { console.error('cargarCursos error:', e); renderCursos(); }
+  try { await cargarAlumnos(); } catch(e) { console.error('cargarAlumnos error:', e); renderAlumnos('todos'); }
+})();

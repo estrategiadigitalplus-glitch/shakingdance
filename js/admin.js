@@ -20,10 +20,20 @@ function goPanel(id) {
   if (link) link.classList.add('active');
   document.getElementById('panel-title').textContent = panelTitles[id] || id;
   document.getElementById('top-btn').innerHTML = '<i class="ti ti-plus"></i>' + (topBtnLabels[id] || 'Nuevo');
+  // Load data for each panel
+  if (id === 'cursos') cargarCursos();
+  if (id === 'alumnos') cargarAlumnos();
+  if (id === 'videos') cargarVideos();
 }
 
 document.querySelectorAll('.sidebar-link[data-panel]').forEach(el => {
   el.addEventListener('click', function () { goPanel(this.dataset.panel); });
+});
+
+// Load dashboard data on start
+document.addEventListener('DOMContentLoaded', async function() {
+  try { await cargarCursos(); } catch(e) { console.error(e); }
+  try { await cargarAlumnos(); } catch(e) { console.error(e); }
 });
 
 // DASHBOARD — progreso por estilo
@@ -885,9 +895,4 @@ async function eliminarVideo(id) {
   } catch(e) { console.error('eliminarVideo error:', e); }
 }
 
-// Update goPanel to load videos
-const _origGoPanel2 = goPanel;
-goPanel = function(id) {
-  _origGoPanel2(id);
-  if (id === 'videos') cargarVideos();
-};
+

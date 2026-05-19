@@ -1,5 +1,11 @@
 // ===== SHAKING DANCE — ADMIN JS =====
 
+// Global state variables
+let cursosDB = [];
+let leccionesPorCurso = {};
+let _editCursoId = null;
+let todosVideos = [];
+
 const panelTitles = {
   dashboard: 'Dashboard', alumnos: 'Gestión de alumnos',
   videos: 'Subir y gestionar videos', cursos: 'Cursos',
@@ -183,7 +189,6 @@ document.getElementById('vid-filters')?.addEventListener('click', function (e) {
 // CURSOS
 
 // ===== CURSOS CON SUPABASE =====
-let cursosDB = [];
 
 async function cargarCursos() {
   try {
@@ -199,7 +204,6 @@ async function cargarCursos() {
 }
 
 // Lecciones por curso cargadas de Supabase
-let leccionesPorCurso = {};
 
 async function renderCursos() {
   try {
@@ -663,7 +667,6 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ===== MODAL NUEVO / EDITAR CURSO =====
-let _editCursoId = null;
 
 function abrirModalCurso(curso) {
   _editCursoId = curso?.id || null;
@@ -831,7 +834,6 @@ function guardarBorradorVideo() {
 }
 
 // Load all videos from Supabase
-let todosVideos = [];
 async function cargarVideos(filtro) {
   try {
     // Get all lecciones from all courses

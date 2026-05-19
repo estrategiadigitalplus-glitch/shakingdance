@@ -36,49 +36,106 @@ document.querySelectorAll('.sidebar-link[data-panel]').forEach(el => {
   el.addEventListener('click', function () { goPanel(this.dataset.panel); });
 });
 
-// Load dashboard data on start
+// Load all data on start
 document.addEventListener('DOMContentLoaded', async function() {
-  try { await cargarCursos(); } catch(e) { console.error(e); }
-  try { await cargarAlumnos(); } catch(e) { console.error(e); }
+  try { await cargarDashboard(); } catch(e) { console.error('dashboard error:', e); }
+  try { await cargarCursos(); } catch(e) { console.error('cursos error:', e); }
+  try { await cargarAlumnos(); } catch(e) { console.error('alumnos error:', e); renderAlumnos('todos'); }
 });
 
+async function cargarDashboard() {
+  try {
+    // Alumnos activos
+    const alumnos = await DB.getAlumnos();
+    const activos = alumnos.filter(a => a.status === 'activo').length;
+    const total = alumnos.length;
+
+    // Cursos y lecciones
+    const cursos = await DB.getCursos();
+    let totalLecciones = 0;
+    for (const c of cursos) {
+      const lecs = await DB.getLecciones(c.id);
+      totalLecciones += lecs.length;
+    }
+
+    // Update dashboard stats
+    const stats = document.querySelectorAll('.stat-val');
+    if (stats[0]) stats[0].textContent = activos;
+    if (stats[1]) stats[1].textContent = totalLecciones;
+    if (stats[2]) stats[2].textContent = total;
+
+    // Update activity table - recent alumnos
+    const recentAlumnos = [...alumnos].slice(0, 5);
+    const tbody = document.getElementById('activity-body');
+    if (tbody && recentAlumnos.length) {
+      tbody.innerHTML = recentAlumnos.map(a => {
+        const ini = (a.nombre[0] + (a.nombre.split(' ')[1]?.[0] || 'X')).toUpperCase();
+        const fecha = new Date(a.created_at);
+        const hace = Math.floor((Date.now() - fecha) / 60000);
+        const haceTxt = hace < 60 ? hace + ' min' : Math.floor(hace/60) + 'h';
+        return `<tr>
+          <td><div style="display:flex;align-items:center;gap:8px">
+            <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--purple));display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:600">${ini}</div>
+            ${a.nombre}
+          </div></td>
+          <td>Registro</td>
+          <td style="color:var(--text2)">${a.plan}</td>
+          <td style="color:var(--text2)">${haceTxt}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Dash sched - show real courses
+    const dashSched = document.getElementById('dash-sched');
+    if (dashSched && cursos.length) {
+      dashSched.innerHTML = cursos.slice(0,3).map(c => `
+        <div class="sched-item">
+          <div class="sched-color" style="background:${c.color || 'var(--teal)'}"></div>
+          <div style="flex:1">
+            <div class="sched-name">${c.nombre} — ${c.nivel}</div>
+            <div class="sched-meta"><i class="ti ti-users"></i>${activos} alumnos activos</div>
+          </div>
+        </div>`).join('');
+    }
+
+    // Dash prog - show real courses
+    const dashProg = document.getElementById('dash-prog');
+    if (dashProg && cursos.length) {
+      dashProg.innerHTML = cursos.map(c => `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:13px;color:var(--text);min-width:80px">${c.nombre}</span>
+          <div class="prog-bar" style="flex:1"><div class="prog-fill" style="width:0%;background:${c.color || 'var(--teal)'}"></div></div>
+          <span style="font-size:12px;color:var(--text2);min-width:32px;text-align:right">—</span>
+        </div>`).join('');
+    }
+
+    // New bars - alumnos por día (últimos 7 días)
+    const dias = ['L','M','X','J','V','S','D'];
+    const hoy = new Date().getDay();
+    const conteos = new Array(7).fill(0);
+    alumnos.forEach(a => {
+      const d = new Date(a.created_at);
+      const diff = Math.floor((Date.now() - d) / 86400000);
+      if (diff < 7) conteos[6 - diff]++;
+    });
+    const maxV = Math.max(...conteos, 1);
+    const newBars = document.getElementById('new-bars');
+    const newLbls = document.getElementById('new-lbls');
+    if (newBars) newBars.innerHTML = conteos.map(v =>
+      `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end">
+        <div style="width:100%;height:${Math.round(v/maxV*72)}px;background:var(--teal);opacity:.7;border-radius:3px 3px 0 0;min-height:4px"></div>
+      </div>`).join('');
+    if (newLbls) newLbls.innerHTML = dias.map(d =>
+      `<div style="flex:1;text-align:center;font-size:10px;color:var(--text2)">${d}</div>`).join('');
+
+  } catch(e) {
+    console.error('cargarDashboard error:', e);
+  }
+}
+
 // DASHBOARD — progreso por estilo
-document.getElementById('dash-prog').innerHTML = SD.courses.map(c => `
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-    <span style="font-size:13px;color:var(--text);min-width:80px">${c.name}</span>
-    <div class="prog-bar" style="flex:1"><div class="prog-fill" style="width:${c.pct}%;background:${c.color}"></div></div>
-    <span style="font-size:12px;color:var(--text2);min-width:32px;text-align:right">${c.pct}%</span>
-  </div>`).join('');
-
-// DASHBOARD — alumnos nuevos
-const newData = [{ l: 'L', v: 3 }, { l: 'M', v: 5 }, { l: 'X', v: 2 }, { l: 'J', v: 7 }, { l: 'V', v: 4 }, { l: 'S', v: 8 }, { l: 'D', v: 1 }];
-const maxN = Math.max(...newData.map(d => d.v));
-document.getElementById('new-bars').innerHTML = newData.map(d =>
-  `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end">
-    <div style="width:100%;height:${Math.round(d.v / maxN * 72)}px;background:var(--teal);opacity:.7;border-radius:3px 3px 0 0"></div>
-  </div>`).join('');
-document.getElementById('new-lbls').innerHTML = newData.map(d =>
-  `<div style="flex:1;text-align:center;font-size:10px;color:var(--text2)">${d.l}</div>`).join('');
-
-// DASHBOARD — actividad
-document.getElementById('activity-body').innerHTML = [
-  { name: 'María González', ini: 'MG', action: 'Completó lección', course: 'Salsa · L.8', ago: '2 min' },
-  { name: 'Luis Pérez', ini: 'LP', action: 'Nuevo registro', course: 'Plan Completo', ago: '15 min' },
-  { name: 'Ana Torres', ini: 'AT', action: 'Obtuvo certificado', course: 'Hip Hop Básico', ago: '1h' },
-  { name: 'Carlos Ruiz', ini: 'CR', action: 'Completó lección', course: 'Bachata · L.3', ago: '2h' },
-  { name: 'Sofía Méndez', ini: 'SM', action: 'Membresía vencida', course: 'Plan Básico', ago: '3h' },
-].map(a => `
-  <tr>
-    <td>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--purple));display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:600;flex-shrink:0">${a.ini}</div>
-        ${a.name}
-      </div>
-    </td>
-    <td>${a.action}</td>
-    <td style="color:var(--text2)">${a.course}</td>
-    <td style="color:var(--text2)">${a.ago}</td>
-  </tr>`).join('');
+// Dashboard data loaded from Supabase in cargarDashboard()
+document.getElementById('activity-body').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:20px">Cargando actividad...</td></tr>';
 
 // ALUMNOS
 function renderAlumnos(filter) {
@@ -632,7 +689,7 @@ async function guardarLeccion() {
         descripcion: '',
         youtube_url: '',
         numero: (lecciones.length || 0) + 1,
-        publicado: false
+        publicado: true
       });
       savedToDb = !!result;
     }

@@ -124,7 +124,7 @@ async function cargarAlumnos() {
 }
 cargarAlumnos();
 
-document.getElementById('alu-filters').addEventListener('click', function (e) {
+document.getElementById('alu-filters')?.addEventListener('click', function (e) {
   const p = e.target.closest('.fpill');
   if (!p) return;
   this.querySelectorAll('.fpill').forEach(x => x.classList.remove('active'));
@@ -162,7 +162,7 @@ function renderVids(filter) {
 }
 renderVids('todos');
 
-document.getElementById('vid-filters').addEventListener('click', function (e) {
+document.getElementById('vid-filters')?.addEventListener('click', function (e) {
   const p = e.target.closest('.fpill');
   if (!p) return;
   this.querySelectorAll('.fpill').forEach(x => x.classList.remove('active'));
@@ -226,11 +226,8 @@ async function renderCursos() {
         leccionesPorCurso[c.id] = [];
       }
     } else {
-      // Not a real UUID — use local SD.courses data
-      const sdCurso = SD.courses.find(s => s.cat === c.cat);
-      leccionesPorCurso[c.id] = (sdCurso?.lessons_list || []).map((l, li) => ({
-        id: String(li), titulo: l.t, duracion: l.d, done: l.done, numero: li + 1, publicado: l.done
-      }));
+      // Not a real UUID — show empty (real lessons come from Supabase)
+      leccionesPorCurso[c.id] = [];
     }
   }
 
@@ -337,7 +334,7 @@ function cerrarModalAlumno() {
 }
 
 // Cerrar al click fuera del modal
-document.getElementById('modal-alumno').addEventListener('click', function(e) {
+document.getElementById('modal-alumno')?.addEventListener('click', function(e) {
   if (e.target === this) cerrarModalAlumno();
 });
 
@@ -473,7 +470,7 @@ function cerrarModalEditar() {
   document.getElementById('modal-editar').style.display = 'none';
 }
 
-document.getElementById('modal-editar').addEventListener('click', function(e) {
+document.getElementById('modal-editar')?.addEventListener('click', function(e) {
   if (e.target === this) cerrarModalEditar();
 });
 
@@ -574,7 +571,7 @@ function cerrarModalLeccion() {
   document.getElementById('modal-leccion').style.display = 'none';
 }
 
-document.getElementById('modal-leccion').addEventListener('click', function(e) {
+document.getElementById('modal-leccion')?.addEventListener('click', function(e) {
   if (e.target === this) cerrarModalLeccion();
 });
 
@@ -674,7 +671,7 @@ function cerrarModalCurso() {
   document.getElementById('modal-curso').style.display = 'none';
 }
 
-document.getElementById('modal-curso').addEventListener('click', function(e) {
+document.getElementById('modal-curso')?.addEventListener('click', function(e) {
   if (e.target === this) cerrarModalCurso();
 });
 

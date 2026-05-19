@@ -1,4 +1,4 @@
-// ===== 2SHAKING DANCE — SUPABASE CONNECTION =====
+// ===== SHAKING DANCE — SUPABASE CONNECTION =====
 
 const SUPABASE_URL = 'https://hfosngjlvowxnujplnfo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhmb3NuZ2psdm93eG51anBsbmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNDE1NzYsImV4cCI6MjA5NDYxNzU3Nn0.qpi62Qd3CURTIbvTk8DOv1P1Dw17WjzjnWQdW4z0opo';
@@ -135,6 +135,65 @@ const DB = {
       method: 'POST',
       headers: { ...this.headers, 'Prefer': 'resolution=merge-duplicates,return=representation' },
       body: JSON.stringify({ alumno_id: alumnoId, leccion_id: leccionId, completado: true, fecha_completado: new Date().toISOString() })
+    });
+    return res.ok;
+  }
+
+  // ===== STORAGE =====
+  async uploadFile(bucket, file, path) {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': file.type,
+        'Cache-Control': '3600',
+        'x-upsert': 'true'
+      },
+      body: file
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('uploadFile error:', res.status, err);
+      return null;
+    }
+    const json = await res.json();
+    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
+  },
+
+  getPublicUrl(bucket, path) {
+    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
+  },
+
+  async deleteFile(bucket, path) {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`, {
+      method: 'DELETE',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    return res.ok;
+  },
+
+  // ===== MATERIALES (PDFs y links) =====
+  async getMateriales(leccionId) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/materiales?leccion_id=eq.${leccionId}&order=created_at.asc`, { headers: this.headers });
+    return res.ok ? await res.json() : [];
+  },
+
+  async createMaterial(data) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/materiales`, {
+      method: 'POST', headers: this.headers, body: JSON.stringify(data)
+    });
+    if (!res.ok) { console.error('createMaterial error:', await res.text()); return null; }
+    const json = await res.json();
+    return Array.isArray(json) ? json[0] : json;
+  },
+
+  async deleteMaterial(id) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/materiales?id=eq.${id}`, {
+      method: 'DELETE', headers: this.headers
     });
     return res.ok;
   }

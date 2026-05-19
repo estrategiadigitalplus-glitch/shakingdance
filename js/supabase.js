@@ -82,17 +82,29 @@ const DB = {
 
   // ===== LECCIONES =====
   async getLecciones(cursoId) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/lecciones?curso_id=eq.${cursoId}&order=created_at.asc`, { headers: this.headers });
-    return res.ok ? await res.json() : [];
+    if (!cursoId) return [];
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/lecciones?curso_id=eq.${cursoId}&order=numero.asc,created_at.asc`, { headers: this.headers });
+    if (!res.ok) {
+      console.error('getLecciones error:', res.status, await res.text());
+      return [];
+    }
+    return await res.json();
   },
 
   async createLeccion(data) {
+    if (data.numero) data.numero = parseInt(data.numero);
     const res = await fetch(`${SUPABASE_URL}/rest/v1/lecciones`, {
       method: 'POST',
       headers: this.headers,
       body: JSON.stringify(data)
     });
-    return res.ok ? (await res.json())[0] : null;
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('createLeccion error:', res.status, err);
+      return null;
+    }
+    const json = await res.json();
+    return Array.isArray(json) ? json[0] : json;
   },
 
   async updateLeccion(id, data) {

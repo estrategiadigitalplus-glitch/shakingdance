@@ -1,4 +1,4 @@
-// ===== SHAKING DANCE — SUPABASE CONNECTION =====
+// ===== 2SHAKING DANCE — SUPABASE CONNECTION =====
 
 const SUPABASE_URL = 'https://hfosngjlvowxnujplnfo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhmb3NuZ2psdm93eG51anBsbmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNDE1NzYsImV4cCI6MjA5NDYxNzU3Nn0.qpi62Qd3CURTIbvTk8DOv1P1Dw17WjzjnWQdW4z0opo';

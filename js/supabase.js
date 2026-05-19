@@ -82,7 +82,7 @@ const DB = {
 
   // ===== LECCIONES =====
   async getLecciones(cursoId) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/lecciones?curso_id=eq.${cursoId}&order=numero.asc`, { headers: this.headers });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/lecciones?curso_id=eq.${cursoId}&order=created_at.asc`, { headers: this.headers });
     return res.ok ? await res.json() : [];
   },
 

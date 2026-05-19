@@ -241,7 +241,7 @@ async function renderCursos() {
         </div>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.titulo || l.t || 'Sin título'}</div>
-          <div style="font-size:11px;color:var(--text2);margin-top:1px"><i class="ti ti-clock" style="font-size:12px"></i> ${l.duracion || l.d || '—'} ${l.publicado ? '<span style='color:var(--teal);margin-left:6px'>● Publicado</span>' : '<span style='color:var(--text3);margin-left:6px'>○ Borrador</span>'}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:1px"><i class="ti ti-clock" style="font-size:12px"></i> ${l.duracion || l.d || '—'} ${l.publicado ? '<span style=\"color:var(--teal);margin-left:6px\">● Publicado</span>' : '<span style=\"color:var(--text3);margin-left:6px\">○ Borrador</span>'}</div>
         </div>
         <div style="display:flex;gap:5px">
           <button class="btn btn-sm" onclick="window.location.href='leccion.html?id=${l.id}&course=${ci}&title=${encodeURIComponent(l.titulo||l.t||'')}' "><i class="ti ti-edit"></i>Editar</button>

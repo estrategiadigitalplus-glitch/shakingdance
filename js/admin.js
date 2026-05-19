@@ -233,7 +233,10 @@ async function renderCursos() {
 
   document.getElementById('cursos-list').innerHTML = cursos.map((c, ci) => {
     const lecciones = leccionesPorCurso[c.id] || [];
-    const totalMin = lecciones.reduce((a, l) => a + parseInt(l.duracion || l.d || 0), 0);
+    const totalMin = lecciones.reduce((a, l) => {
+      const dur = (l.duracion || l.d || '0').toString().replace(/[^0-9]/g, '');
+      return a + (parseInt(dur) || 0);
+    }, 0);
 
     const lessonRows = lecciones.map((l, li) => `
       <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:0.5px solid var(--border);transition:background .1s" onmouseover="this.style.background='rgba(255,255,255,.02)'" onmouseout="this.style.background='transparent'">
@@ -744,3 +747,147 @@ goPanel = function(id) {
   try { await cargarCursos(); } catch(e) { console.error('cargarCursos error:', e); renderCursos(); }
   try { await cargarAlumnos(); } catch(e) { console.error('cargarAlumnos error:', e); renderAlumnos('todos'); }
 })();
+
+// ===== VIDEOS =====
+function previewVideo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const preview = document.getElementById('vid-file-preview');
+  preview.style.display = 'flex';
+  document.getElementById('vid-fname').textContent = file.name;
+  document.getElementById('vid-fsize').textContent = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+function quitarVideo() {
+  document.getElementById('vid-file-preview').style.display = 'none';
+  document.getElementById('vid-file-input').value = '';
+}
+
+function mostrarMsgVideo(msg, ok) {
+  const el = document.getElementById('vid-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.background = ok ? 'rgba(29,158,117,.12)' : 'rgba(226,75,74,.12)';
+  el.style.color = ok ? 'var(--teal)' : '#E24B4A';
+  el.style.border = '0.5px solid ' + (ok ? 'rgba(29,158,117,.3)' : 'rgba(226,75,74,.3)');
+}
+
+async function publicarVideo(publicado = true) {
+  const titulo    = document.getElementById('vid-titulo')?.value.trim();
+  const youtube   = document.getElementById('vid-youtube')?.value.trim();
+  const cursoSel  = document.getElementById('vid-curso')?.value;
+  const duracion  = document.getElementById('vid-duracion')?.value.trim();
+  const desc      = document.getElementById('vid-descripcion')?.value.trim();
+
+  if (!titulo) { mostrarMsgVideo('El título es obligatorio.', false); return; }
+  if (!cursoSel) { mostrarMsgVideo('Selecciona un curso.', false); return; }
+
+  mostrarMsgVideo('Guardando...', true);
+
+  try {
+    const lecciones = await DB.getLecciones(cursoSel);
+    const result = await DB.createLeccion({
+      curso_id: cursoSel,
+      titulo,
+      duracion: duracion ? duracion + ' min' : '—',
+      descripcion: desc || '',
+      youtube_url: youtube || '',
+      numero: (lecciones.length || 0) + 1,
+      publicado
+    });
+
+    if (result) {
+      mostrarMsgVideo('✓ Video ' + (publicado ? 'publicado' : 'guardado como borrador') + ' correctamente.', true);
+      // Clear form
+      document.getElementById('vid-titulo').value = '';
+      document.getElementById('vid-youtube').value = '';
+      document.getElementById('vid-duracion').value = '';
+      document.getElementById('vid-descripcion').value = '';
+      document.getElementById('vid-file-preview').style.display = 'none';
+      document.getElementById('vid-file-input').value = '';
+      // Refresh list
+      await cargarVideos();
+    } else {
+      mostrarMsgVideo('Error al guardar. Intenta de nuevo.', false);
+    }
+  } catch(e) {
+    console.error('publicarVideo error:', e);
+    mostrarMsgVideo('Error de conexión.', false);
+  }
+}
+
+function guardarBorradorVideo() {
+  publicarVideo(false);
+}
+
+// Load all videos from Supabase
+let todosVideos = [];
+async function cargarVideos(filtro) {
+  try {
+    // Get all lecciones from all courses
+    const cursos = await DB.getCursos();
+    let todas = [];
+    for (const c of cursos) {
+      const lecs = await DB.getLecciones(c.id);
+      lecs.forEach(l => { l._cursoNombre = c.nombre; l._cursoEstilo = c.estilo; l._cursoColor = c.color || '#1D9E75'; });
+      todas = todas.concat(lecs);
+    }
+    todosVideos = todas;
+    renderVids(filtro || 'todos');
+
+    // Populate curso select
+    const sel = document.getElementById('vid-curso');
+    if (sel) {
+      sel.innerHTML = '<option value="">Selecciona un curso...</option>' +
+        cursos.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+    }
+  } catch(e) {
+    console.log('cargarVideos error:', e);
+    renderVids('todos');
+  }
+}
+
+function renderVids(filtro) {
+  const videos = filtro === 'todos' ? todosVideos : todosVideos.filter(v => v._cursoEstilo === filtro);
+  const iconMap = { salsa:'ti-music', bachata:'ti-heart', hiphop:'ti-trending-up', reggaeton:'ti-flame', cumbia:'ti-music' };
+
+  if (!videos.length) {
+    document.getElementById('vid-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text2);font-size:13px">No hay videos publicados aún</div>';
+    return;
+  }
+
+  document.getElementById('vid-list').innerHTML = videos.map(v => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--border-radius-md);margin-bottom:8px">
+      <div style="width:62px;height:38px;border-radius:7px;background:${v._cursoColor}22;display:flex;align-items:center;justify-content:center;color:${v._cursoColor};font-size:18px;flex-shrink:0;border:0.5px solid ${v._cursoColor}33">
+        <i class="ti ${iconMap[v._cursoEstilo] || 'ti-video'}"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px">${v.titulo}</div>
+        <div style="font-size:11px;color:var(--text2);display:flex;align-items:center;gap:8px">
+          <span>${v._cursoNombre || ''}</span>
+          <span><i class="ti ti-clock" style="font-size:11px"></i> ${v.duracion || '—'}</span>
+          <span style="color:${v.publicado ? 'var(--teal)' : 'var(--text3)'}">${v.publicado ? '● Publicado' : '○ Borrador'}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        ${v.youtube_url ? `<a href="${v.youtube_url}" target="_blank" class="btn btn-sm"><i class="ti ti-brand-youtube"></i>Ver</a>` : ''}
+        <button class="btn btn-sm" onclick="window.location.href='leccion.html?id=${v.id}'"><i class="ti ti-edit"></i>Editar</button>
+        <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="eliminarVideo('${v.id}')"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+async function eliminarVideo(id) {
+  if (!confirm('¿Eliminar este video?')) return;
+  try {
+    await DB.deleteLeccion(id);
+    await cargarVideos();
+  } catch(e) { console.error('eliminarVideo error:', e); }
+}
+
+// Update goPanel to load videos
+const _origGoPanel2 = goPanel;
+goPanel = function(id) {
+  _origGoPanel2(id);
+  if (id === 'videos') cargarVideos();
+};

@@ -538,18 +538,21 @@ async function eliminarAlumno() {
 
 // ===== MODAL NUEVA LECCIÓN =====
 function abrirModalLeccionPorId(cursoDbId, courseIdx) {
-  // Find full course object from cursosDB
+  // Always find from cursosDB using the real DB id
   const courseFromDb = cursosDB.find(c => c.id === cursoDbId);
-  window._editCourseObj = courseFromDb || SD.courses[courseIdx] || {};
+  window._editCourseObj = courseFromDb || {};
+  window._editCourseIdx = courseIdx;
+  window._editCourseName = courseFromDb?.nombre || courseFromDb?.name || 'Curso';
   abrirModalLeccion(courseIdx);
 }
 
 function abrirModalLeccion(courseIdx) {
   window._editCourseIdx = courseIdx;
-  // Try SD.courses first, then cursosDB
-  const course = SD.courses[courseIdx] || cursosDB[courseIdx] || {};
-  window._editCourseName = course.name || course.nombre || 'Curso';
-  window._editCourseObj = course;
+  // ONLY use _editCourseObj if already set by abrirModalLeccionPorId
+  if (!window._editCourseObj || !window._editCourseObj.id) {
+    window._editCourseObj = cursosDB[courseIdx] || {};
+    window._editCourseName = window._editCourseObj.nombre || 'Curso';
+  }
   document.getElementById('modal-leccion-titulo').textContent = `Nueva lección — ${window._editCourseName}`;
   document.getElementById('leccion-titulo').value = '';
   document.getElementById('leccion-dur').value = '';
@@ -588,6 +591,7 @@ async function guardarLeccion() {
 
   const ci     = window._editCourseIdx;
   const course = window._editCourseObj || {};
+  console.log('Guardando lección para curso:', course.id, course.nombre || course.name);
   const newLesson = { t: titulo, d: dur + ' min', done: false };
 
   // 1. Add to SD.courses local (siempre funciona)

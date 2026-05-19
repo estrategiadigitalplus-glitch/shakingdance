@@ -213,20 +213,24 @@ async function renderCursos() {
   }));
 
   // Load lessons for each course from Supabase
+  // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
   for (const c of cursos) {
-    try {
-      if (c.id && typeof c.id === 'string') {
+    const isValidUUID = c.id && uuidRegex.test(c.id);
+    if (isValidUUID) {
+      try {
         const lecciones = await DB.getLecciones(c.id);
         leccionesPorCurso[c.id] = lecciones || [];
-      } else {
-        // fallback to SD.courses lessons
-        const sdCurso = SD.courses.find(s => s.cat === c.cat);
-        leccionesPorCurso[c.id] = (sdCurso?.lessons_list || []).map((l, li) => ({
-          id: li, titulo: l.t, duracion: l.d, done: l.done, numero: li + 1
-        }));
+      } catch(e) {
+        leccionesPorCurso[c.id] = [];
       }
-    } catch(e) {
-      leccionesPorCurso[c.id] = [];
+    } else {
+      // Not a real UUID — use local SD.courses data
+      const sdCurso = SD.courses.find(s => s.cat === c.cat);
+      leccionesPorCurso[c.id] = (sdCurso?.lessons_list || []).map((l, li) => ({
+        id: String(li), titulo: l.t, duracion: l.d, done: l.done, numero: li + 1, publicado: l.done
+      }));
     }
   }
 

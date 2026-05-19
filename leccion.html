@@ -341,6 +341,45 @@
 <script src="js/data.js"></script>
 <script src="js/supabase.js"></script>
 <script>
+// Load existing materials when opening lesson
+async function cargarMateriales() {
+  const params = new URLSearchParams(window.location.search);
+  const leccionId = params.get('id');
+  if (!leccionId) return;
+
+  try {
+    const materiales = await DB.getMateriales(leccionId);
+    const pdfList = document.getElementById('pdf-list');
+    if (pdfList && materiales.length) {
+      // Clear default items and show real ones
+      const items = pdfList.querySelectorAll('.content-item');
+      items.forEach(i => i.remove());
+      materiales.forEach(m => {
+        const item = document.createElement('div');
+        item.className = 'content-item';
+        item.innerHTML = `
+          <div class="ci-icon ci-red"><i class="ti ti-file-text"></i></div>
+          <div class="ci-info">
+            <div class="ci-title">${m.nombre}</div>
+            <div class="ci-meta"><i class="ti ti-file"></i>${m.tamanio || ''}</div>
+          </div>
+          <a href="${m.url}" target="_blank" class="btn btn-sm btn-teal"><i class="ti ti-download"></i>Ver</a>
+          <span class="ci-badge cb-green">Subido</span>
+          <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="eliminarMaterial('${m.id}',this)"><i class="ti ti-trash"></i></button>`;
+        pdfList.appendChild(item);
+      });
+    }
+  } catch(e) { console.log('cargarMateriales error:', e); }
+}
+
+async function eliminarMaterial(id, btn) {
+  try {
+    await DB.deleteMaterial(id);
+    btn.closest('.content-item').remove();
+    toast('Material eliminado');
+  } catch(e) { toast('Error al eliminar', '#E24B4A'); }
+}
+
 // READ URL PARAMS
 (function() {
   const p = new URLSearchParams(window.location.search);
@@ -361,6 +400,9 @@
     document.querySelector('input[value="Vuelta doble"]') && (document.querySelector('input[value="Vuelta doble"]').value = title || '');
   }
 })();
+
+// Load materials
+document.addEventListener('DOMContentLoaded', cargarMateriales);
 
 // TABS
 document.querySelectorAll('.tab[data-tab]').forEach(t => {
@@ -439,23 +481,50 @@ async function publicar() {
   }, 2500);
 }
 
-// VIDEO — Seleccionar archivo
-function seleccionarArchivo(input) {
+// VIDEO — Seleccionar archivo y subir a Supabase Storage
+let _uploadedVideoUrl = '';
+
+async function seleccionarArchivo(input) {
   const file = input.files[0];
   if (!file) return;
+
   document.getElementById('upload-zone').style.display = 'none';
   const preview = document.getElementById('file-preview');
   preview.style.display = 'flex';
   document.getElementById('file-name').textContent = file.name;
   document.getElementById('file-size').textContent = (file.size / 1024 / 1024).toFixed(1) + ' MB';
-  // Simulate upload progress
-  let pct = 0;
-  const interval = setInterval(() => {
-    pct += Math.random() * 15;
-    if (pct >= 100) { pct = 100; clearInterval(interval); toast('✓ Video cargado correctamente'); }
-    document.getElementById('upload-progress').style.width = pct + '%';
-    document.getElementById('upload-pct').textContent = Math.round(pct) + '%';
-  }, 300);
+  document.getElementById('upload-progress').style.width = '10%';
+  document.getElementById('upload-pct').textContent = 'Subiendo...';
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const lessonId = params.get('id') || params.get('title') || Date.now().toString();
+    const path = `leccion-${lessonId}/${Date.now()}-${file.name.replace(/\s/g,'_')}`;
+
+    // Simulate progress while uploading
+    let pct = 10;
+    const interval = setInterval(() => {
+      pct = Math.min(pct + 5, 85);
+      document.getElementById('upload-progress').style.width = pct + '%';
+    }, 500);
+
+    const url = await DB.uploadFile('videos', file, path);
+    clearInterval(interval);
+
+    if (url) {
+      _uploadedVideoUrl = url;
+      document.getElementById('upload-progress').style.width = '100%';
+      document.getElementById('upload-pct').textContent = '100%';
+      toast('✓ Video subido correctamente');
+    } else {
+      toast('Error al subir el video. Intenta de nuevo.', '#E24B4A');
+      quitarFile();
+    }
+  } catch(e) {
+    console.error('Upload error:', e);
+    toast('Error de conexión al subir.', '#E24B4A');
+    quitarFile();
+  }
 }
 
 function quitarFile() {
@@ -482,25 +551,65 @@ function quitarYT() {
   document.getElementById('yt-input').value = '';
 }
 
-// PDF — Subir
-function subirPDF(input) {
+// PDF — Subir a Supabase Storage
+async function subirPDF(input) {
   const file = input.files[0];
   if (!file) return;
+
+  // Show loading item
   const item = document.createElement('div');
   item.className = 'content-item';
   item.innerHTML = `
-    <div class="ci-icon ci-red"><i class="ti ti-file-text"></i></div>
+    <div class="ci-icon ci-red"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i></div>
     <div class="ci-info">
       <div class="ci-title">${file.name}</div>
-      <div class="ci-meta"><i class="ti ti-file"></i>${(file.size/1024/1024).toFixed(1)} MB</div>
-    </div>
-    <span class="ci-badge cb-green">Subido</span>
-    <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="this.closest('.content-item').remove();toast('PDF eliminado')"><i class="ti ti-trash"></i></button>
-  `;
+      <div class="ci-meta">Subiendo...</div>
+    </div>`;
   document.getElementById('pdf-list').appendChild(item);
-  toast('✓ ' + file.name + ' subido correctamente');
   input.value = '';
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const lessonId = params.get('id') || Date.now().toString();
+    const path = `leccion-${lessonId}/${Date.now()}-${file.name.replace(/\s/g,'_')}`;
+    const url = await DB.uploadFile('pdfs', file, path);
+
+    if (url) {
+      // Save to materiales table
+      const leccionId = params.get('id');
+      if (leccionId) {
+        await DB.createMaterial({
+          leccion_id: leccionId,
+          tipo: 'pdf',
+          nombre: file.name,
+          url: url,
+          tamanio: (file.size/1024/1024).toFixed(1) + ' MB'
+        });
+      }
+      item.innerHTML = `
+        <div class="ci-icon ci-red"><i class="ti ti-file-text"></i></div>
+        <div class="ci-info">
+          <div class="ci-title">${file.name}</div>
+          <div class="ci-meta"><i class="ti ti-file"></i>${(file.size/1024/1024).toFixed(1)} MB</div>
+        </div>
+        <a href="${url}" target="_blank" class="btn btn-sm btn-teal"><i class="ti ti-download"></i>Ver</a>
+        <span class="ci-badge cb-green">Subido</span>
+        <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="this.closest('.content-item').remove()"><i class="ti ti-trash"></i></button>`;
+      toast('✓ ' + file.name + ' subido correctamente');
+    } else {
+      item.remove();
+      toast('Error al subir el PDF.', '#E24B4A');
+    }
+  } catch(e) {
+    item.remove();
+    toast('Error de conexión.', '#E24B4A');
+  }
 }
+
+// Add spin animation
+const style = document.createElement('style');
+style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(style);
 
 // LINKS
 function agregarLink() {

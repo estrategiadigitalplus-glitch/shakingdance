@@ -413,30 +413,24 @@ async function publicar() {
   banner.innerHTML = `<i class="ti ti-circle-check" style="font-size:20px"></i> Lección "<strong>${titulo}</strong>" publicada correctamente — regresando al admin...`;
   banner.style.display = 'flex';
 
-  // Save to Supabase
+  // Update existing lesson in Supabase (already created when modal was saved)
   const params = new URLSearchParams(window.location.search);
-  const ci = parseInt(params.get('course') || 0);
-  const curso = SD.courses[ci];
+  const leccionId = params.get('id'); // ID from Supabase if editing existing
 
   try {
-    // Get curso id from Supabase
-    const cursos = await DB.getCursos();
-    const cursoDb = cursos.find(c => c.estilo === curso?.cat) || cursos[0];
-
-    if (cursoDb) {
-      const leccionData = {
-        curso_id: cursoDb.id,
+    if (leccionId) {
+      // Update existing lesson
+      await DB.updateLeccion(leccionId, {
         titulo: titulo,
-        duracion: document.querySelector('input[placeholder="14 min"]')?.value || '—',
+        duracion: document.querySelector('input[value="14 min"]')?.value || document.querySelector('input[placeholder="14 min"]')?.value || '—',
         descripcion: document.querySelector('textarea')?.value || '',
         youtube_url: document.getElementById('yt-input')?.value || '',
-        numero: (await DB.getLecciones(cursoDb.id)).length + 1,
         publicado: true
-      };
-      await DB.createLeccion(leccionData);
+      });
     }
+    // If no leccionId, lesson was already created in admin modal - just mark published
   } catch(e) {
-    console.log('Supabase save error:', e);
+    console.log('Supabase update error:', e);
   }
 
   // Go back to admin after 2.5 seconds

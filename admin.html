@@ -32,7 +32,7 @@
       <div class="sidebar-sec">Principal</div>
       <button class="sidebar-link active" data-panel="dashboard"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
       <button class="sidebar-link" data-panel="alumnos"><i class="ti ti-users"></i>Alumnos<span class="nbadge">3</span></button>
-      <button class="sidebar-link" data-panel="videos"><i class="ti ti-video"></i>Subir videos</button>
+      <button class="sidebar-link" data-panel="videos"><i class="ti ti-archive"></i>Biblioteca</button>
       <button class="sidebar-link" data-panel="cursos"><i class="ti ti-layout-grid"></i>Cursos</button>
       <div class="sidebar-sec">Análisis</div>
       <button class="sidebar-link" data-panel="metricas"><i class="ti ti-chart-bar"></i>Métricas</button>
@@ -108,59 +108,35 @@
 
       <!-- VIDEOS -->
       <div class="panel" id="panel-videos">
-        <div class="upload-zone" onclick="document.getElementById('vid-file-input').click()" style="cursor:pointer">
-          <div class="upload-icon"><i class="ti ti-cloud-upload"></i></div>
-          <div style="font-size:14px;font-weight:600;margin-bottom:4px;color:var(--text)">Arrastra tu video aquí</div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:14px">MP4, MOV · máx 2GB · o haz click para seleccionar</div>
-          <label for="vid-file-input" class="btn btn-teal" style="cursor:pointer"><i class="ti ti-upload"></i>Seleccionar archivo</label>
-          <input type="file" id="vid-file-input" accept="video/*" style="display:none" onchange="previewVideo(this)"/>
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px" id="bib-stats">
+          <div class="stat-card"><div class="stat-icon si-teal"><i class="ti ti-video"></i></div><div><div class="stat-val" id="bib-total">—</div><div class="stat-lbl">Videos totales</div></div></div>
+          <div class="stat-card"><div class="stat-icon si-purple"><i class="ti ti-check"></i></div><div><div class="stat-val" id="bib-publicados">—</div><div class="stat-lbl">Publicados</div></div></div>
+          <div class="stat-card"><div class="stat-icon si-amber"><i class="ti ti-edit"></i></div><div><div class="stat-val" id="bib-borradores">—</div><div class="stat-lbl">Borradores</div></div></div>
         </div>
-        <div id="vid-file-preview" style="display:none;background:var(--dark3);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:none;align-items:center;gap:10px">
-          <i class="ti ti-video" style="color:var(--teal);font-size:22px"></i>
-          <div style="flex:1"><div id="vid-fname" style="font-size:13px;font-weight:500;color:var(--text)"></div><div id="vid-fsize" style="font-size:11px;color:var(--text2)"></div></div>
-          <button class="btn btn-sm" style="color:#E24B4A" onclick="quitarVideo()"><i class="ti ti-x"></i></button>
+        <!-- Filters -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="filter-row" id="vid-filters" style="margin-bottom:0">
+            <div class="fpill active" data-vf="todos">Todos</div>
+            <div class="fpill" data-vf="salsa">Salsa</div>
+            <div class="fpill" data-vf="bachata">Bachata</div>
+            <div class="fpill" data-vf="hiphop">Hip Hop</div>
+            <div class="fpill" data-vf="reggaeton">Reggaeton</div>
+            <div class="fpill" data-vf="cumbia">Cumbia</div>
+          </div>
+          <button class="btn btn-teal btn-sm" onclick="goPanel('cursos')"><i class="ti ti-plus"></i>Nueva lección</button>
         </div>
-        <div class="card" style="margin-bottom:16px">
-          <div style="font-size:14px;font-weight:600;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);color:var(--text)">Detalles del video</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-            <div class="form-group" style="margin:0">
-              <label class="form-label">Título de la lección</label>
-              <input class="form-input" id="vid-titulo" placeholder="Ej. Paso básico salsa"/>
-            </div>
-            <div class="form-group" style="margin:0">
-              <label class="form-label">Link de YouTube (opcional)</label>
-              <input class="form-input" id="vid-youtube" placeholder="https://youtube.com/watch?v=..."/>
-            </div>
-            <div class="form-group" style="margin:0">
-              <label class="form-label">Curso</label>
-              <select class="form-select" id="vid-curso">
-                <option value="">Selecciona un curso...</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin:0">
-              <label class="form-label">Duración (minutos)</label>
-              <input class="form-input" id="vid-duracion" type="number" placeholder="Ej. 15"/>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Descripción</label>
-            <input class="form-input" id="vid-descripcion" placeholder="Breve descripción del contenido..."/>
-          </div>
-          <div id="vid-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:12px"></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-teal" onclick="publicarVideo()"><i class="ti ti-upload"></i>Publicar video</button>
-            <button class="btn" onclick="guardarBorradorVideo()"><i class="ti ti-device-floppy"></i>Guardar borrador</button>
+        <!-- Search -->
+        <div style="margin-bottom:14px">
+          <input class="form-input" id="bib-search" placeholder="Buscar video por título..." oninput="buscarVideos(this.value)" style="max-width:340px"/>
+        </div>
+        <!-- List -->
+        <div id="vid-list">
+          <div style="padding:40px;text-align:center;color:var(--text2)">
+            <i class="ti ti-archive" style="font-size:36px;display:block;margin-bottom:8px;opacity:.3"></i>
+            Cargando biblioteca...
           </div>
         </div>
-        <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)">Videos publicados</div>
-        <div class="filter-row" id="vid-filters">
-          <div class="fpill active" data-vf="todos">Todos</div>
-          <div class="fpill" data-vf="salsa">Salsa</div>
-          <div class="fpill" data-vf="bachata">Bachata</div>
-          <div class="fpill" data-vf="hiphop">Hip Hop</div>
-          <div class="fpill" data-vf="reggaeton">Reggaeton</div>
-        </div>
-        <div id="vid-list"></div>
       </div>
 
       <!-- CURSOS -->

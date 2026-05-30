@@ -8,12 +8,12 @@ let todosVideos = [];
 
 const panelTitles = {
   dashboard: 'Dashboard', alumnos: 'Gestión de alumnos',
-  videos: 'Subir y gestionar videos', cursos: 'Cursos',
+  videos: 'Biblioteca de videos', cursos: 'Cursos',
   metricas: 'Métricas y análisis', config: 'Configuración'
 };
 const topBtnLabels = {
   dashboard: 'Nuevo video', alumnos: 'Nuevo alumno',
-  videos: 'Subir video', cursos: 'Nuevo curso',
+  videos: 'Nueva lección', cursos: 'Nuevo curso',
   metricas: 'Exportar', config: 'Guardar'
 };
 
@@ -893,57 +893,76 @@ function guardarBorradorVideo() {
 // Load all videos from Supabase
 async function cargarVideos(filtro) {
   try {
-    // Get all lecciones from all courses
     const cursos = await DB.getCursos();
     let todas = [];
     for (const c of cursos) {
       const lecs = await DB.getLecciones(c.id);
-      lecs.forEach(l => { l._cursoNombre = c.nombre; l._cursoEstilo = c.estilo; l._cursoColor = c.color || '#1D9E75'; });
+      lecs.forEach(l => {
+        l._cursoNombre = c.nombre;
+        l._cursoEstilo = c.estilo;
+        l._cursoColor = c.color || '#1D9E75';
+      });
       todas = todas.concat(lecs);
     }
     todosVideos = todas;
-    renderVids(filtro || 'todos');
 
-    // Populate curso select
-    const sel = document.getElementById('vid-curso');
-    if (sel) {
-      sel.innerHTML = '<option value="">Selecciona un curso...</option>' +
-        cursos.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
-    }
+    // Update stats
+    const total = todas.length;
+    const publicados = todas.filter(v => v.publicado).length;
+    const borradores = total - publicados;
+    const elTotal = document.getElementById('bib-total');
+    const elPub = document.getElementById('bib-publicados');
+    const elBor = document.getElementById('bib-borradores');
+    if (elTotal) elTotal.textContent = total;
+    if (elPub) elPub.textContent = publicados;
+    if (elBor) elBor.textContent = borradores;
+
+    renderVids(filtro || 'todos');
   } catch(e) {
     console.log('cargarVideos error:', e);
-    renderVids('todos');
+    document.getElementById('vid-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text2)">Error cargando videos.</div>';
   }
+}
+
+function buscarVideos(q) {
+  if (!q) { renderVids('todos'); return; }
+  const filtered = todosVideos.filter(v => v.titulo.toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('vid-list').innerHTML = filtered.length
+    ? filtered.map(v => makeVidRow(v)).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--text2)">No se encontraron videos.</div>';
+}
+
+const iconMap = { salsa:'ti-music', bachata:'ti-heart', hiphop:'ti-trending-up', reggaeton:'ti-flame', cumbia:'ti-music' };
+
+function makeVidRow(v) {
+  return `
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 15px;background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--border-radius-md);margin-bottom:8px;transition:border-color .12s" onmouseover="this.style.borderColor='var(--teal)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:64px;height:40px;border-radius:8px;background:${v._cursoColor}18;display:flex;align-items:center;justify-content:center;color:${v._cursoColor};font-size:20px;flex-shrink:0;border:0.5px solid ${v._cursoColor}30">
+        <i class="ti ${iconMap[v._cursoEstilo] || 'ti-video'}"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${v.titulo}</div>
+        <div style="font-size:11px;color:var(--text2);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="display:flex;align-items:center;gap:4px"><i class="ti ti-layout-grid" style="font-size:11px"></i>${v._cursoNombre || ''}</span>
+          <span style="display:flex;align-items:center;gap:4px"><i class="ti ti-clock" style="font-size:11px"></i>${v.duracion || '—'}</span>
+          <span style="color:${v.publicado ? 'var(--teal)' : '#EF9F27'};font-weight:500">${v.publicado ? '● Publicado' : '○ Borrador'}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        ${v.youtube_url ? `<a href="${v.youtube_url}" target="_blank" class="btn btn-sm" style="color:#E24B4A"><i class="ti ti-brand-youtube"></i>YouTube</a>` : ''}
+        <button class="btn btn-sm" onclick="window.location.href='leccion.html?id=${v.id}'"><i class="ti ti-edit"></i>Editar</button>
+        <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="eliminarVideo('${v.id}')"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`;
 }
 
 function renderVids(filtro) {
   const videos = filtro === 'todos' ? todosVideos : todosVideos.filter(v => v._cursoEstilo === filtro);
-  const iconMap = { salsa:'ti-music', bachata:'ti-heart', hiphop:'ti-trending-up', reggaeton:'ti-flame', cumbia:'ti-music' };
-
   if (!videos.length) {
-    document.getElementById('vid-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text2);font-size:13px">No hay videos publicados aún</div>';
+    document.getElementById('vid-list').innerHTML = '<div style="padding:40px;text-align:center;color:var(--text2);font-size:13px"><i class="ti ti-archive" style="font-size:32px;display:block;margin-bottom:8px;opacity:.3"></i>No hay videos en esta categoría</div>';
     return;
   }
-
-  document.getElementById('vid-list').innerHTML = videos.map(v => `
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--border-radius-md);margin-bottom:8px">
-      <div style="width:62px;height:38px;border-radius:7px;background:${v._cursoColor}22;display:flex;align-items:center;justify-content:center;color:${v._cursoColor};font-size:18px;flex-shrink:0;border:0.5px solid ${v._cursoColor}33">
-        <i class="ti ${iconMap[v._cursoEstilo] || 'ti-video'}"></i>
-      </div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px">${v.titulo}</div>
-        <div style="font-size:11px;color:var(--text2);display:flex;align-items:center;gap:8px">
-          <span>${v._cursoNombre || ''}</span>
-          <span><i class="ti ti-clock" style="font-size:11px"></i> ${v.duracion || '—'}</span>
-          <span style="color:${v.publicado ? 'var(--teal)' : 'var(--text3)'}">${v.publicado ? '● Publicado' : '○ Borrador'}</span>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px">
-        ${v.youtube_url ? `<a href="${v.youtube_url}" target="_blank" class="btn btn-sm"><i class="ti ti-brand-youtube"></i>Ver</a>` : ''}
-        <button class="btn btn-sm" onclick="window.location.href='leccion.html?id=${v.id}'"><i class="ti ti-edit"></i>Editar</button>
-        <button class="btn btn-sm" style="color:#E24B4A;border-color:rgba(226,75,74,.25)" onclick="eliminarVideo('${v.id}')"><i class="ti ti-trash"></i></button>
-      </div>
-    </div>`).join('');
+  document.getElementById('vid-list').innerHTML = videos.map(v => makeVidRow(v)).join('');
 }
 
 async function eliminarVideo(id) {

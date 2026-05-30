@@ -195,7 +195,7 @@ async function cargarAlumnos() {
   const total = document.getElementById('total-alumnos');
   if (total) total.textContent = SD.members.length + ' alumnos totales';
 }
-cargarAlumnos();
+// cargarAlumnos called in DOMContentLoaded
 
 document.getElementById('alu-filters')?.addEventListener('click', function (e) {
   const p = e.target.closest('.fpill');

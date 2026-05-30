@@ -1,4 +1,4 @@
-// ===== SHAKING DANCE — ADMIN JS =====
+// ===== SHAKING DANCE — ADMIN JS =====h
 
 // Global state variables
 let cursosDB = [];
@@ -972,5 +972,6 @@ async function eliminarVideo(id) {
     await cargarVideos();
   } catch(e) { console.error('eliminarVideo error:', e); }
 }
+
 
 
